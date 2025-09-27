@@ -5,16 +5,15 @@ import "./ITruce.sol";
 
 library TruceAMM {
     uint256 private constant PRECISION = 1e18;
-    uint256 private constant MIN_LIQUIDITY = 1000;
+    uint256 private constant SLIPPAGE_PRECISION = 10000; // For percentage calculations
     
     error InsufficientLiquidity();
     error SlippageExceeded();
     error InvalidAmount();
+    error CapExceeded();
     
     /**
-     * @dev Calculate shares received for given ETH using constant product formula
-     * For truce markets: (x + Δx)(y + Δy) = k, where Δx + Δy = ETH_in
-     * This ensures that buying YES and NO shares for same amount always costs exactly 1 ETH per complete set
+     * @dev Calculate shares out with cap checking
      */
     function calculateSharesOut(
         uint256 yesReserves,
@@ -24,32 +23,26 @@ library TruceAMM {
     ) internal pure returns (uint256 sharesOut) {
         if (ethAmount == 0) revert InvalidAmount();
         
+        // Cap check will be done after calculating the new reserves
+        
         // For initial liquidity
         if (yesReserves == 0 || noReserves == 0) {
             return ethAmount;
         }
         
-        uint256 k = yesReserves * noReserves;
-        
         if (outcome == ITruce.Outcome.Yes) {
-            // Calculate new yes reserves after adding liquidity
-            // We need to solve: (yesReserves + sharesOut) * (noReserves + (ethAmount - sharesOut)) = k
-            // This simplifies to finding sharesOut such that the invariant holds
-            uint256 newTotalReserves = yesReserves + noReserves + ethAmount;
-            uint256 newYesReserves = (k + ethAmount * yesReserves) / newTotalReserves;
-            sharesOut = newYesReserves - yesReserves;
+            // For buying YES shares: sharesOut = (ethAmount * yesReserves) / (noReserves + ethAmount)
+            sharesOut = (ethAmount * yesReserves) / (noReserves + ethAmount);
         } else {
-            // Similar calculation for NO shares
-            uint256 newTotalReserves = yesReserves + noReserves + ethAmount;
-            uint256 newNoReserves = (k + ethAmount * noReserves) / newTotalReserves;
-            sharesOut = newNoReserves - noReserves;
+            // For buying NO shares: sharesOut = (ethAmount * noReserves) / (yesReserves + ethAmount)
+            sharesOut = (ethAmount * noReserves) / (yesReserves + ethAmount);
         }
         
         if (sharesOut == 0) revert InsufficientLiquidity();
     }
     
     /**
-     * @dev Calculate ETH received for selling shares
+     * @dev Calculate ETH out for selling shares
      */
     function calculateEthOut(
         uint256 yesReserves,
@@ -74,12 +67,49 @@ library TruceAMM {
             ethOut = newYesReserves - yesReserves;
         }
         
-        // Ensure we don't drain all liquidity
         if (ethOut >= (yesReserves + noReserves) / 2) revert InsufficientLiquidity();
     }
     
     /**
-     * @dev Get current price of outcome shares (in ETH per share)
+     * @dev Calculate expected slippage for a trade
+     * Returns slippage in basis points (e.g., 250 = 2.5%)
+     */
+    function calculateSlippage(
+        uint256 yesReserves,
+        uint256 noReserves,
+        uint256 ethAmount,
+        ITruce.Outcome outcome
+    ) internal pure returns (uint256 slippageBps) {
+        if (yesReserves == 0 || noReserves == 0) {
+            return 0; // No slippage on first trade
+        }
+        
+        // Get current spot price
+        uint256 spotPrice = getPrice(yesReserves, noReserves, outcome);
+        
+        // Calculate shares we'd get
+        uint256 sharesOut;
+        
+        if (outcome == ITruce.Outcome.Yes) {
+            sharesOut = (ethAmount * yesReserves) / (noReserves + ethAmount);
+        } else {
+            sharesOut = (ethAmount * noReserves) / (yesReserves + ethAmount);
+        }
+        
+        // Expected shares at spot price
+        uint256 expectedShares = (ethAmount * PRECISION) / spotPrice;
+        
+        // Calculate slippage as percentage
+        if (sharesOut < expectedShares) {
+            uint256 slippageAmount = expectedShares - sharesOut;
+            slippageBps = (slippageAmount * SLIPPAGE_PRECISION) / expectedShares;
+        } else {
+            slippageBps = 0;
+        }
+    }
+    
+    /**
+     * @dev Get current price of outcome shares
      */
     function getPrice(
         uint256 yesReserves,
@@ -87,7 +117,7 @@ library TruceAMM {
         ITruce.Outcome outcome
     ) internal pure returns (uint256 price) {
         if (yesReserves == 0 || noReserves == 0) {
-            return PRECISION / 2; // 0.5 ETH per share when no liquidity
+            return PRECISION / 2;
         }
         
         uint256 totalReserves = yesReserves + noReserves;
@@ -97,5 +127,17 @@ library TruceAMM {
         } else {
             price = (yesReserves * PRECISION) / totalReserves;
         }
+    }
+    
+    /**
+     * @dev Calculate utilization percentage of current cap
+     * Returns in basis points (e.g., 8000 = 80%)
+     */
+    function getCapUtilization(
+        uint256 totalReserves,
+        uint256 currentCap
+    ) internal pure returns (uint256) {
+        if (currentCap == 0) return 0;
+        return (totalReserves * SLIPPAGE_PRECISION) / currentCap;
     }
 }

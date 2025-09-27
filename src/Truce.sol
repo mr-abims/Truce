@@ -9,8 +9,17 @@ contract Truce is ITruce {
     
     uint256 private constant MIN_RESOLUTION_TIME = 1 hours;
     uint256 private constant MAX_RESOLUTION_TIME = 365 days;
-    uint256 private constant PLATFORM_FEE = 200; // 2% in basis points
+    uint256 private constant PLATFORM_FEE = 200; // 2%
     uint256 private constant BASIS_POINTS = 10000;
+    
+    // Dynamic cap defaults
+    uint256 private constant DEFAULT_GROWTH_MULTIPLIER = 200; // 2x growth
+    uint256 private constant DEFAULT_GROWTH_THRESHOLD = 8000; // 80% utilization
+    uint256 private constant DEFAULT_MIN_GROWTH_INTERVAL = 1 hours;
+    
+    // Category-specific caps
+    mapping(MarketCategory => uint256) public categoryBaseCaps;
+    mapping(MarketCategory => uint256) public categoryMaxCaps;
     
     uint256 public nextMarketId;
     address public owner;
@@ -19,7 +28,7 @@ contract Truce is ITruce {
     mapping(uint256 => Market) public markets;
     mapping(uint256 => mapping(address => uint256)) public yesShares;
     mapping(uint256 => mapping(address => uint256)) public noShares;
-    mapping(uint256 => bool) public hasRedeemed;
+    mapping(uint256 => mapping(address => bool)) public hasRedeemed;
     
     modifier onlyMarketCreator(uint256 _marketId) {
         require(markets[_marketId].creator == msg.sender, "Not market creator");
@@ -39,21 +48,46 @@ contract Truce is ITruce {
     
     constructor() {
         owner = msg.sender;
+        
+        // Set default caps per category
+        categoryBaseCaps[MarketCategory.CRYPTO] = 20 ether;
+        categoryMaxCaps[MarketCategory.CRYPTO] = 1000 ether;
+        
+        categoryBaseCaps[MarketCategory.SPORTS] = 10 ether;
+        categoryMaxCaps[MarketCategory.SPORTS] = 500 ether;
+        
+        categoryBaseCaps[MarketCategory.POLITICS] = 50 ether;
+        categoryMaxCaps[MarketCategory.POLITICS] = 2000 ether;
+        
+        categoryBaseCaps[MarketCategory.WEATHER] = 5 ether;
+        categoryMaxCaps[MarketCategory.WEATHER] = 100 ether;
+        
+        categoryBaseCaps[MarketCategory.ENTERTAINMENT] = 10 ether;
+        categoryMaxCaps[MarketCategory.ENTERTAINMENT] = 300 ether;
+        
+        categoryBaseCaps[MarketCategory.OTHER] = 10 ether;
+        categoryMaxCaps[MarketCategory.OTHER] = 200 ether;
     }
     
     /**
-     * @dev Create a new truce market
+     * @dev Create a new prediction market with dynamic caps
      */
     function createMarket(
         string memory _question,
         uint256 _resolutionDeadline,
-        uint256 _initialLiquidity
+        uint256 _initialLiquidity,
+        MarketCategory _category
     ) external payable override returns (uint256) {
         require(bytes(_question).length > 0, "Empty question");
         require(_resolutionDeadline > block.timestamp + MIN_RESOLUTION_TIME, "Resolution too soon");
         require(_resolutionDeadline < block.timestamp + MAX_RESOLUTION_TIME, "Resolution too late");
         require(_initialLiquidity > 0, "Need initial liquidity");
-        require(msg.value >= _initialLiquidity, "Insufficient ETH for liquidity");
+        require(msg.value >= _initialLiquidity, "Insufficient ETH");
+        
+        uint256 baseCap = categoryBaseCaps[_category];
+        uint256 maxCap = categoryMaxCaps[_category];
+        
+        require(_initialLiquidity <= baseCap, "Initial liquidity exceeds base cap");
         
         uint256 marketId = nextMarketId++;
         
@@ -63,28 +97,39 @@ contract Truce is ITruce {
             createdAt: block.timestamp,
             resolutionDeadline: _resolutionDeadline,
             state: MarketState.Active,
-            result: Outcome.Yes, // Default, will be set on resolution
-            totalYesShares: _initialLiquidity,
-            totalNoShares: _initialLiquidity,
-            k: _initialLiquidity * _initialLiquidity
+            result: Outcome.Yes,
+            totalYesShares: _initialLiquidity / 2,
+            totalNoShares: _initialLiquidity / 2,
+            k: (_initialLiquidity / 2) * (_initialLiquidity / 2),
+            category: _category,
+            capConfig: MarketCap({
+                baseCap: baseCap,
+                currentCap: baseCap,
+                growthMultiplier: DEFAULT_GROWTH_MULTIPLIER,
+                growthThreshold: DEFAULT_GROWTH_THRESHOLD,
+                maxCap: maxCap,
+                lastGrowthTime: block.timestamp,
+                minGrowthInterval: DEFAULT_MIN_GROWTH_INTERVAL
+            }),
+            tradeCount: 0
         });
         
         // Give initial shares to creator
         yesShares[marketId][msg.sender] = _initialLiquidity / 2;
         noShares[marketId][msg.sender] = _initialLiquidity / 2;
         
-        // Refund excess ETH
+        // Refund excess
         if (msg.value > _initialLiquidity) {
             payable(msg.sender).transfer(msg.value - _initialLiquidity);
         }
         
-        emit MarketCreated(marketId, _question, msg.sender);
+        emit MarketCreated(marketId, _question, msg.sender, _category);
         
         return marketId;
     }
     
     /**
-     * @dev Buy outcome shares using constant product AMM
+     * @dev Buy shares with automatic cap growth checking
      */
     function buyShares(
         uint256 _marketId,
@@ -96,39 +141,56 @@ contract Truce is ITruce {
         
         Market storage market = markets[_marketId];
         
-        uint256 sharesOut = TruceAMM.calculateSharesOut(
-            market.totalYesShares,
-            market.totalNoShares,
-            msg.value,
-            _outcome
-        );
+        // Check if we should grow the cap before this trade
+        _tryGrowCap(_marketId);
         
-        // Take platform fee
+        // Take platform fee first
         uint256 fee = (msg.value * PLATFORM_FEE) / BASIS_POINTS;
         uint256 netAmount = msg.value - fee;
         totalPlatformFees += fee;
         
-        // Update reserves and user shares
+        // Calculate expected slippage before trade
+        uint256 slippage = TruceAMM.calculateSlippage(
+            market.totalYesShares,
+            market.totalNoShares,
+            netAmount,
+            _outcome
+        );
+        
+        // Calculate shares
+        uint256 sharesOut = TruceAMM.calculateSharesOut(
+            market.totalYesShares,
+            market.totalNoShares,
+            netAmount,
+            _outcome
+        );
+        
+        // Check if the new total reserves would exceed cap
+        uint256 newTotalReserves = market.totalYesShares + market.totalNoShares + netAmount;
+        if (newTotalReserves > market.capConfig.currentCap) revert TruceAMM.CapExceeded();
+        
+        // Update reserves
         if (_outcome == Outcome.Yes) {
             market.totalYesShares += sharesOut;
-            market.totalNoShares += (netAmount - sharesOut);
+            market.totalNoShares += netAmount;
             yesShares[_marketId][msg.sender] += sharesOut;
         } else {
             market.totalNoShares += sharesOut;
-            market.totalYesShares += (netAmount - sharesOut);
+            market.totalYesShares += netAmount;
             noShares[_marketId][msg.sender] += sharesOut;
         }
         
-        // Update constant product invariant
+        // Update invariant and trade count
         market.k = market.totalYesShares * market.totalNoShares;
+        market.tradeCount++;
         
-        emit SharesPurchased(_marketId, msg.sender, _outcome, sharesOut, msg.value);
+        emit SharesPurchased(_marketId, msg.sender, _outcome, sharesOut, msg.value, slippage);
         
         return sharesOut;
     }
     
     /**
-     * @dev Sell outcome shares back to the AMM
+     * @dev Sell shares back to pool
      */
     function sellShares(
         uint256 _marketId,
@@ -161,7 +223,7 @@ contract Truce is ITruce {
         uint256 netPayout = ethOut - fee;
         totalPlatformFees += fee;
         
-        // Update reserves and user shares
+        // Update reserves
         if (_outcome == Outcome.Yes) {
             market.totalYesShares -= _shares;
             yesShares[_marketId][msg.sender] -= _shares;
@@ -170,8 +232,9 @@ contract Truce is ITruce {
             noShares[_marketId][msg.sender] -= _shares;
         }
         
-        // Update constant product invariant
+        // Update invariant
         market.k = market.totalYesShares * market.totalNoShares;
+        market.tradeCount++;
         
         // Send payout
         payable(msg.sender).transfer(netPayout);
@@ -182,12 +245,99 @@ contract Truce is ITruce {
     }
     
     /**
-     * @dev Resolve market (only creator can do this in v1)
+     * @dev Internal function to check and grow cap if conditions are met
+     */
+    function _tryGrowCap(uint256 _marketId) internal {
+        Market storage market = markets[_marketId];
+        MarketCap storage capConfig = market.capConfig;
+        
+        // Check if already at max cap
+        if (capConfig.currentCap >= capConfig.maxCap) {
+            return;
+        }
+        
+        // Check minimum time interval
+        if (block.timestamp < capConfig.lastGrowthTime + capConfig.minGrowthInterval) {
+            return;
+        }
+        
+        // Check utilization threshold
+        uint256 totalReserves = market.totalYesShares + market.totalNoShares;
+        uint256 utilization = TruceAMM.getCapUtilization(totalReserves, capConfig.currentCap);
+        
+        if (utilization >= capConfig.growthThreshold) {
+            uint256 oldCap = capConfig.currentCap;
+            uint256 newCap = (oldCap * capConfig.growthMultiplier) / 100;
+            
+            // Cap at maximum
+            if (newCap > capConfig.maxCap) {
+                newCap = capConfig.maxCap;
+            }
+            
+            capConfig.currentCap = newCap;
+            capConfig.lastGrowthTime = block.timestamp;
+            
+            emit CapIncreased(_marketId, oldCap, newCap, "Utilization threshold reached");
+        }
+    }
+    
+    /**
+     * @dev Get expected slippage for a potential trade
+     */
+    function getExpectedSlippage(
+        uint256 _marketId,
+        Outcome _outcome,
+        uint256 _ethAmount
+    ) external view override marketExists(_marketId) returns (uint256) {
+        Market storage market = markets[_marketId];
+        
+        return TruceAMM.calculateSlippage(
+            market.totalYesShares,
+            market.totalNoShares,
+            _ethAmount,
+            _outcome
+        );
+    }
+    
+    /**
+     * @dev Get current cap for a market
+     */
+    function getCurrentCap(uint256 _marketId) external view override marketExists(_marketId) returns (uint256) {
+        return markets[_marketId].capConfig.currentCap;
+    }
+    
+    /**
+     * @dev Check if market cap can grow and why
+     */
+    function canGrowCap(uint256 _marketId) external view override marketExists(_marketId) returns (bool, string memory) {
+        Market storage market = markets[_marketId];
+        MarketCap storage capConfig = market.capConfig;
+        
+        if (capConfig.currentCap >= capConfig.maxCap) {
+            return (false, "Already at maximum cap");
+        }
+        
+        if (block.timestamp < capConfig.lastGrowthTime + capConfig.minGrowthInterval) {
+            return (false, "Growth interval not reached");
+        }
+        
+        uint256 totalReserves = market.totalYesShares + market.totalNoShares;
+        uint256 utilization = TruceAMM.getCapUtilization(totalReserves, capConfig.currentCap);
+        
+        if (utilization < capConfig.growthThreshold) {
+            return (false, "Utilization threshold not reached");
+        }
+        
+        return (true, "Can grow cap");
+    }
+    
+    /**
+     * @dev Resolve market (only creator)
      */
     function resolveMarket(
         uint256 _marketId,
         Outcome _result
-    ) external override marketExists(_marketId) onlyMarketCreator(_marketId) {
+    ) external marketExists(_marketId) onlyMarketCreator(_marketId) {
         Market storage market = markets[_marketId];
         require(market.state == MarketState.Active, "Market not active");
         require(block.timestamp >= market.resolutionDeadline, "Too early to resolve");
@@ -199,12 +349,12 @@ contract Truce is ITruce {
     }
     
     /**
-     * @dev Redeem winnings after market resolution
+     * @dev Redeem winnings
      */
-    function redeemWinnings(uint256 _marketId) external override marketExists(_marketId) returns (uint256) {
+    function redeemWinnings(uint256 _marketId) external marketExists(_marketId) returns (uint256) {
         Market storage market = markets[_marketId];
         require(market.state == MarketState.Resolved, "Market not resolved");
-        require(!hasRedeemed[_marketId], "Already redeemed");
+        require(!hasRedeemed[_marketId][msg.sender], "Already redeemed");
         
         uint256 winningShares;
         if (market.result == Outcome.Yes) {
@@ -217,7 +367,6 @@ contract Truce is ITruce {
         
         require(winningShares > 0, "No winning shares");
         
-        // Calculate payout: winning shares get proportional share of losing side's reserves
         uint256 totalWinningShares = market.result == Outcome.Yes ? 
             market.totalYesShares : market.totalNoShares;
         uint256 totalLosingReserves = market.result == Outcome.Yes ? 
@@ -225,7 +374,7 @@ contract Truce is ITruce {
             
         uint256 payout = (winningShares * totalLosingReserves) / totalWinningShares;
         
-        hasRedeemed[_marketId] = true;
+        hasRedeemed[_marketId][msg.sender] = true;
         payable(msg.sender).transfer(payout);
         
         emit Redeemed(_marketId, msg.sender, payout);
@@ -236,49 +385,27 @@ contract Truce is ITruce {
     /**
      * @dev Get market information
      */
-    function getMarket(uint256 _marketId) external view override marketExists(_marketId) returns (Market memory) {
+    function getMarket(uint256 _marketId) external view marketExists(_marketId) returns (Market memory) {
         return markets[_marketId];
     }
     
     /**
-     * @dev Get current price for buying shares
+     * @dev Admin: Update category caps
      */
-    function getSharePrice(
-        uint256 _marketId,
-        Outcome _outcome,
-        uint256 _shares
-    ) external view override marketExists(_marketId) returns (uint256) {
-        Market storage market = markets[_marketId];
+    function updateCategoryCaps(
+        MarketCategory _category,
+        uint256 _baseCap,
+        uint256 _maxCap
+    ) external {
+        require(msg.sender == owner, "Not owner");
+        require(_baseCap <= _maxCap, "Base cap exceeds max cap");
         
-        if (_shares == 0) {
-            return TruceAMM.getPrice(
-                market.totalYesShares,
-                market.totalNoShares,
-                _outcome
-            );
-        }
-        
-        // For specific share amount, calculate the cost
-        return TruceAMM.calculateSharesOut(
-            market.totalYesShares,
-            market.totalNoShares,
-            _shares,
-            _outcome
-        );
+        categoryBaseCaps[_category] = _baseCap;
+        categoryMaxCaps[_category] = _maxCap;
     }
     
     /**
-     * @dev Get user's share balances
-     */
-    function getUserShares(
-        uint256 _marketId,
-        address _user
-    ) external view override marketExists(_marketId) returns (uint256, uint256) {
-        return (yesShares[_marketId][_user], noShares[_marketId][_user]);
-    }
-    
-    /**
-     * @dev Owner functions
+     * @dev Withdraw platform fees
      */
     function withdrawFees() external {
         require(msg.sender == owner, "Not owner");
@@ -287,7 +414,5 @@ contract Truce is ITruce {
         payable(owner).transfer(amount);
     }
     
-    receive() external payable {
-        // Allow contract to receive ETH
-    }
+    receive() external payable {}
 }
