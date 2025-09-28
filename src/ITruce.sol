@@ -8,7 +8,6 @@ interface ITruce {
     enum MarketCategory { CRYPTO, SPORTS, POLITICS, WEATHER, ENTERTAINMENT, OTHER }
     
     struct MarketCap {
-        uint256 baseCap;           // Initial cap when market created
         uint256 currentCap;        // Current maximum liquidity allowed
         uint256 growthMultiplier;  // Multiplier for growth (e.g., 200 = 2x)
         uint256 growthThreshold;   // Percentage threshold to trigger growth (e.g., 80 = 80%)

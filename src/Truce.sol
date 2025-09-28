@@ -17,8 +17,6 @@ contract Truce is ITruce {
     uint256 private constant DEFAULT_GROWTH_THRESHOLD = 8000; // 80% utilization
     uint256 private constant DEFAULT_MIN_GROWTH_INTERVAL = 1 hours;
     
-    // Category-specific caps
-    mapping(MarketCategory => uint256) public categoryBaseCaps;
     mapping(MarketCategory => uint256) public categoryMaxCaps;
     
     uint256 public nextMarketId;
@@ -49,28 +47,17 @@ contract Truce is ITruce {
     constructor() {
         owner = msg.sender;
         
-        // Set default caps per category
-        categoryBaseCaps[MarketCategory.CRYPTO] = 20 ether;
+        // Set ONLY maximum caps per category (no base caps!)
         categoryMaxCaps[MarketCategory.CRYPTO] = 1000 ether;
-        
-        categoryBaseCaps[MarketCategory.SPORTS] = 10 ether;
         categoryMaxCaps[MarketCategory.SPORTS] = 500 ether;
-        
-        categoryBaseCaps[MarketCategory.POLITICS] = 50 ether;
         categoryMaxCaps[MarketCategory.POLITICS] = 2000 ether;
-        
-        categoryBaseCaps[MarketCategory.WEATHER] = 5 ether;
         categoryMaxCaps[MarketCategory.WEATHER] = 100 ether;
-        
-        categoryBaseCaps[MarketCategory.ENTERTAINMENT] = 10 ether;
         categoryMaxCaps[MarketCategory.ENTERTAINMENT] = 300 ether;
-        
-        categoryBaseCaps[MarketCategory.OTHER] = 10 ether;
         categoryMaxCaps[MarketCategory.OTHER] = 200 ether;
     }
     
     /**
-     * @dev Create a new prediction market with dynamic caps
+     * @dev Create market - cap starts at user's initial liquidity
      */
     function createMarket(
         string memory _question,
@@ -84,12 +71,13 @@ contract Truce is ITruce {
         require(_initialLiquidity > 0, "Need initial liquidity");
         require(msg.value >= _initialLiquidity, "Insufficient ETH");
         
-        uint256 baseCap = categoryBaseCaps[_category];
         uint256 maxCap = categoryMaxCaps[_category];
-        
-        require(_initialLiquidity <= baseCap, "Initial liquidity exceeds base cap");
+        require(_initialLiquidity <= maxCap, "Initial liquidity exceeds max cap");
         
         uint256 marketId = nextMarketId++;
+        
+        // Cap starts at exactly what user provides!
+        uint256 startingCap = _initialLiquidity;
         
         markets[marketId] = Market({
             question: _question,
@@ -98,13 +86,12 @@ contract Truce is ITruce {
             resolutionDeadline: _resolutionDeadline,
             state: MarketState.Active,
             result: Outcome.Yes,
-            totalYesShares: _initialLiquidity / 2,
-            totalNoShares: _initialLiquidity / 2,
-            k: (_initialLiquidity / 2) * (_initialLiquidity / 2),
+            totalYesShares: _initialLiquidity,
+            totalNoShares: _initialLiquidity,
+            k: _initialLiquidity * _initialLiquidity,
             category: _category,
             capConfig: MarketCap({
-                baseCap: baseCap,
-                currentCap: baseCap,
+                currentCap: startingCap,           // Starts at user's liquidity
                 growthMultiplier: DEFAULT_GROWTH_MULTIPLIER,
                 growthThreshold: DEFAULT_GROWTH_THRESHOLD,
                 maxCap: maxCap,
@@ -144,39 +131,35 @@ contract Truce is ITruce {
         // Check if we should grow the cap before this trade
         _tryGrowCap(_marketId);
         
-        // Take platform fee first
+        // Calculate expected slippage
+        uint256 slippage = TruceAMM.calculateSlippage(
+            market.totalYesShares,
+            market.totalNoShares,
+            msg.value,
+            _outcome
+        );
+        
+        // Calculate shares with cap checking
+        uint256 sharesOut = TruceAMM.calculateSharesOut(
+            market.totalYesShares,
+            market.totalNoShares,
+            msg.value,
+            _outcome
+        );
+        
+        // Take platform fee
         uint256 fee = (msg.value * PLATFORM_FEE) / BASIS_POINTS;
         uint256 netAmount = msg.value - fee;
         totalPlatformFees += fee;
         
-        // Calculate expected slippage before trade
-        uint256 slippage = TruceAMM.calculateSlippage(
-            market.totalYesShares,
-            market.totalNoShares,
-            netAmount,
-            _outcome
-        );
-        
-        // Calculate shares
-        uint256 sharesOut = TruceAMM.calculateSharesOut(
-            market.totalYesShares,
-            market.totalNoShares,
-            netAmount,
-            _outcome
-        );
-        
-        // Check if the new total reserves would exceed cap
-        uint256 newTotalReserves = market.totalYesShares + market.totalNoShares + netAmount;
-        if (newTotalReserves > market.capConfig.currentCap) revert TruceAMM.CapExceeded();
-        
         // Update reserves
         if (_outcome == Outcome.Yes) {
             market.totalYesShares += sharesOut;
-            market.totalNoShares += netAmount;
+            market.totalNoShares += (netAmount - sharesOut);
             yesShares[_marketId][msg.sender] += sharesOut;
         } else {
             market.totalNoShares += sharesOut;
-            market.totalYesShares += netAmount;
+            market.totalYesShares += (netAmount - sharesOut);
             noShares[_marketId][msg.sender] += sharesOut;
         }
         
@@ -394,13 +377,9 @@ contract Truce is ITruce {
      */
     function updateCategoryCaps(
         MarketCategory _category,
-        uint256 _baseCap,
         uint256 _maxCap
     ) external {
         require(msg.sender == owner, "Not owner");
-        require(_baseCap <= _maxCap, "Base cap exceeds max cap");
-        
-        categoryBaseCaps[_category] = _baseCap;
         categoryMaxCaps[_category] = _maxCap;
     }
     
