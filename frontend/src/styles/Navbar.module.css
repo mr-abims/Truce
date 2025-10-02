@@ -1,0 +1,155 @@
+/* Navbar Container */
+.navbar {
+  width: 100%;
+  max-width: 1440px;
+  height: 126px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 90px;
+  padding-left: 90px;
+  background: transparent;
+  position: relative;
+  margin: 0 auto;
+  min-width: 1200px;
+}
+
+/* Left Section - Brand */
+.leftSection {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  width: 127px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  color: #FFFFFF;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.brand:hover {
+  color: #00FF99;
+  text-shadow: 0 0 10px #00FF99, 0 0 20px #00FF99, 0 0 30px #00FF99;
+  transform: scale(1.05);
+}
+
+/* Center Section - Navigation Links */
+.centerSection {
+  display: flex;
+  align-items: center;
+}
+
+.navLinks {
+  width: 372px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.navLink {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navLink:hover {
+  color: #00FF99;
+}
+
+/* Right Section - RainbowKit Connect Button */
+.rightSection {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 215px;
+  max-width: 500px;
+  flex: 1;
+}
+
+/* Custom button color */
+.rightSection :global([data-testid="rk-connect-button"]) {
+  background: transparent !important;
+  border: 2px solid #00FF99 !important;
+  color: #00FF99 !important;
+  border-radius: 4px !important;
+}
+
+.rightSection :global([data-testid="rk-connect-button"]:hover) {
+  background: transparent !important;
+  border-color: #00FF99 !important;
+  color: #00FF99 !important;
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+/* Connected wallet button hover */
+.rightSection :global([data-testid="rk-account-button"]:hover) {
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+/* Network button hover - multiple selectors to catch all variations */
+.rightSection :global([data-testid="rk-network-button"]:hover) {
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+.rightSection :global(button[data-testid="rk-network-button"]:hover) {
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+.rightSection :global([data-testid="rk-network-button"] button:hover) {
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+/* Catch any button in the network area */
+.rightSection :global([data-testid="rk-network-button"] *:hover) {
+  box-shadow: 0 0 20px #00FF99, 0 0 40px #00FF99 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .navbar {
+    padding-right: 40px;
+    padding-left: 40px;
+    min-width: auto;
+  }
+  
+  .navLinks {
+    gap: 20px;
+  }
+  
+  .navLink {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding-right: 20px;
+    padding-left: 20px;
+    height: 80px;
+  }
+  
+  .brand {
+    font-size: 24px;
+  }
+  
+  .navLinks {
+    display: none;
+  }
+  
+  .rightSection {
+    min-width: auto;
+  }
+}
