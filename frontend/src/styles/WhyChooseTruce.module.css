@@ -1,0 +1,249 @@
+/* Why Choose Truce Section */
+.whyChooseTruceSection {
+  width: 100%;
+  min-height: 800px;
+  background-color: #101010;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 50px;
+  overflow: visible;
+}
+
+/* Ellipse Background on Right Side */
+.whyChooseTruceSection::before {
+  content: '';
+  position: absolute;
+  width: 324px;
+  height: 270.67px;
+  top: 200px;
+  right: -117px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #00FF99 100%);
+  border-radius: 50%;
+  opacity: 0.3;
+  filter: blur(50px);
+  z-index: 0;
+}
+
+/* Container */
+.container {
+  width: 737px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 40px;
+}
+
+/* Title Container */
+.titleContainer {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Title */
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 32px;
+  color: #FFFFFF;
+  text-align: center;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 0%;
+}
+
+/* Subtitle Container */
+.subtitleContainer {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Subtitle */
+.subtitle {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.2;
+  opacity: 0.8;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Character Cards Container */
+.cardsContainer {
+  width: 100%;
+  max-width: 1200px;
+  height: 490px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-top: 40px;
+  z-index: 1;
+}
+
+/* Character Card */
+.characterCard {
+  width: 350px;
+  height: 489px;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: none;
+  position: relative;
+}
+
+
+.characterCard:hover {
+  background: rgba(0, 255, 153, 0.1);
+  opacity: 0.7;
+}
+
+.characterCard:hover .cardBelow {
+  background: transparent;
+  box-shadow: 0 0 50px rgba(0, 255, 153, 0.08);
+}
+
+.characterCard:hover .cardTitle {
+  color: #00FF99;
+}
+
+.characterCard:hover .cardDescription {
+  color: #00FF99;
+}
+
+/* Card Top */
+.cardTop {
+  width: 100%;
+  height: 207px;
+  border-radius: 4.5px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  background: #222222;
+  outline: 2px dashed #000000;
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+/* Monster Image */
+.monsterImage {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  border-radius: 4.5px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* Card Below */
+.cardBelow {
+  width: 100%;
+  height: 306px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  gap: 16px;
+  background: rgba(0, 255, 153, 0.7);
+  box-shadow: 0 0 30px rgba(0, 255, 153, 0.1);
+  transition: all 0.3s ease;
+  outline: 2px dashed #000000;
+  outline-offset: -2px;
+  z-index: 1;
+  margin-top: -2px;
+}
+
+/* Card Title */
+.cardTitle {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #000000;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0%;
+}
+
+/* Card Description */
+.cardDescription {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #000000;
+  text-align: center;
+  line-height: 28px;
+  letter-spacing: 1%;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 28px;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+  }
+  
+  .cardsContainer {
+    width: 90%;
+    flex-direction: column;
+    gap: 30px;
+    height: auto;
+  }
+  
+  .characterCard {
+    width: 100%;
+    height: auto;
+  }
+  
+  .cardTop {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .cardBelow {
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+  }
+}

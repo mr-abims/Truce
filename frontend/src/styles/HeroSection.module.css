@@ -1,0 +1,227 @@
+/* Hero Section Container */
+.heroSection {
+  width: 100%;
+  min-height: 800px;
+  background-color: #101010;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Background Container for Figures */
+.backgroundContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Left Figure - pic2.png */
+.figureLeft {
+  position: absolute;
+  top: 147px;
+  left: 72px;
+  width: 392px;
+  height: 729px;
+  opacity: 1;
+  transform: rotate(0deg);
+  z-index: 1;
+}
+
+/* Right Figure - pic3.png */
+.figureRight {
+  position: absolute;
+  top: 148px;
+  left: 894px;
+  width: 526px;
+  height: 646px;
+  opacity: 1;
+  transform: rotate(0deg);
+  z-index: 1;
+}
+
+/* Figure Images */
+.figureImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Hero Content */
+.heroContent {
+  position: absolute;
+  z-index: 2;
+  width: 1024px;
+  height: 306px;
+  top: 205px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Headline Container */
+.headlineContainer {
+  width: 1024px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Headline */
+.headline {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 96px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #FFFFFF;
+  margin: 0;
+  text-shadow: 1px 1px 5px rgba(0, 255, 153, 0.3);
+  filter: drop-shadow(0 0 3px #00FF99);
+}
+
+/* Subheadline Container */
+.subheadlineContainer {
+  width: 869px;
+  height: 50px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subheadline */
+.subheadline {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* Stats Container */
+.statsContainer {
+  width: 1075px;
+  height: 120px;
+  position: absolute;
+  top: 450px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 99px;
+  z-index: 3;
+}
+
+/* Stat Item */
+.statItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px;
+  transition: none;
+  box-sizing: border-box;
+}
+
+/* Stat Item 1 - Digital Currency */
+.statItem:nth-child(1) {
+  width: 334px;
+  height: 120px;
+}
+
+/* Stat Item 2 - Active Users */
+.statItem:nth-child(2) {
+  width: 265px;
+  height: 120px;
+}
+
+/* Stat Item 3 - Total Volume */
+.statItem:nth-child(3) {
+  width: 278px;
+  height: 120px;
+}
+
+/* Stat Icon */
+.statIcon {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Stat Content Container */
+.statContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Stat Number */
+.statNumber {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: #FFFFFF;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(0, 255, 153, 0.3);
+  line-height: 150%;
+  letter-spacing: 0%;
+}
+
+/* Stat Description */
+.statDescription {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #FFFFFF;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(0, 255, 153, 0.3);
+  line-height: 28px;
+  letter-spacing: 1%;
+}
+
+/* Responsive Design */
+@media (max-width: 1440px) {
+  .figureLeft {
+    left: 20px;
+  }
+  
+  .figureRight {
+    left: calc(100% - 546px);
+  }
+}
+
+@media (max-width: 1200px) {
+  .figureLeft,
+  .figureRight {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    min-height: 80vh;
+  }
+  
+  .heroContent {
+    padding: 1rem;
+  }
+}
