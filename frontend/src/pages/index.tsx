@@ -6,11 +6,10 @@ import HowItWorks from '../components/HowItWorks';
 import WhyChooseTruce from '../components/WhyChooseTruce';
 import MarketCategories from '../components/MarketCategories';
 import Footer from '../components/Footer';
-import styles from '../styles/Home.module.css';
 
 const Home: NextPage = () => {
   return (
-    <div className={styles.container}>
+    <div className="p-0 bg-black min-h-screen">
       <Head>
         <title>Truce - Landing Page</title>
         <meta
@@ -22,7 +21,7 @@ const Home: NextPage = () => {
 
       <Navbar />
 
-      <main className={styles.main}>
+      <main className="min-h-[calc(100vh-126px)] p-0 flex-1 flex flex-col justify-start items-center bg-black">
         <HeroSection />
         <HowItWorks />
         <WhyChooseTruce />
