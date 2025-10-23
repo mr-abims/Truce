@@ -1,81 +1,79 @@
 import React from 'react';
 import Image from 'next/image';
-import styles from '../styles/WhyChooseTruce.module.css';
 
 const WhyChooseTruce: React.FC = () => {
   return (
-    <section className={styles.whyChooseTruceSection}>
-      <div className={styles.container}>
-        <div className={styles.titleContainer}>
-          <h2 className={styles.title}>Why Choose Truce?</h2>
+    <section className="w-full min-h-[800px] bg-[#101010] relative flex flex-col items-center justify-start pt-[50px] overflow-visible before:content-[''] before:absolute before:w-[324px] before:h-[270.67px] before:top-[200px] before:right-[-117px] before:bg-gradient-to-b before:from-white before:to-[#00FF99] before:rounded-full before:opacity-30 before:blur-[50px] before:z-0">
+      <div className="w-[737px] flex flex-col gap-[10px] p-[10px] relative z-[1] mb-16 md:w-[90%] md:p-5">
+        <div className="w-full flex items-center justify-center gap-[10px] p-[10px]">
+          <h2 className="font-orbitron font-semibold text-[32px] text-white text-center m-0 leading-none tracking-[0%] md:text-[28px]">Why Choose Truce?</h2>
         </div>
-        <div className={styles.subtitleContainer}>
-          <p className={styles.subtitle}>
+        <div className="w-full flex items-center justify-center gap-[10px] p-[10px]">
+          <p className="font-orbitron font-normal text-[15px] text-white m-0 leading-[1.2] opacity-80 text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full md:text-[16px]">
             Advanced features that make prediction markets accessible, fair and rewarding.
           </p>
         </div>
       </div>
       
-      {/* Character Cards Container */}
-      <div className={styles.cardsContainer}>
-        {/* Card 1 - Community */}
-        <div className={styles.characterCard}>
-          <div className={styles.cardTop}>
+      <div className="w-full max-w-[1200px] h-[490px] flex justify-between px-5 z-[1] md:w-[90%] md:flex-col md:gap-[30px] md:h-auto">
+        
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
             <Image
               src="/images/mon1.png"
               alt="Community Monster"
               width={379}
               height={207}
-              className={styles.monsterImage}
+              className="w-[60%] h-[60%] object-contain rounded-[4.5px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[2]"
               unoptimized
               priority
             />
           </div>
-          <div className={styles.cardBelow}>
-            <h3 className={styles.cardTitle}>Community</h3>
-            <p className={styles.cardDescription}>
-              Constant product AMM with real-time slippage calculation ensures you know exactly what you're getting with no hidden outcomes.
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+            <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Community</h3>
+            <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
+              Constant product AMM with real-time slippage calculation ensures you know exactly what you&apos;re getting with no hidden outcomes.
             </p>
           </div>
         </div>
 
-        {/* Card 2 - Liquidity */}
-        <div className={styles.characterCard}>
-          <div className={styles.cardTop}>
+        
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
             <Image
               src="/images/mon2.png"
               alt="Liquidity Monster"
               width={379}
               height={207}
-              className={styles.monsterImage}
+              className="w-[60%] h-[60%] object-contain rounded-[4.5px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[2]"
               unoptimized
               priority
             />
           </div>
-          <div className={styles.cardBelow}>
-            <h3 className={styles.cardTitle}>Liquidity</h3>
-            <p className={styles.cardDescription}>
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+            <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Liquidity</h3>
+            <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
               Always-on liquidity powered by automated market makers allows you to trade anytime without waiting for counterparties.
             </p>
           </div>
         </div>
 
-        {/* Card 3 - Transparency */}
-        <div className={styles.characterCard}>
-          <div className={styles.cardTop}>
+        
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
             <Image
               src="/images/mon3.png"
               alt="Transparency Monster"
               width={379}
               height={207}
-              className={styles.monsterImage}
+              className="w-[60%] h-[60%] object-contain rounded-[4.5px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[2]"
               unoptimized
               priority
             />
           </div>
-          <div className={styles.cardBelow}>
-            <h3 className={styles.cardTitle}>Transparency</h3>
-            <p className={styles.cardDescription}>
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+            <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Transparency</h3>
+            <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
               Collective wisdom is aggregated into accurate probability estimates, rewarding users with credibility and real benefits for correct predictions.
             </p>
           </div>
