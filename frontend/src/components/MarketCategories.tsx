@@ -7,7 +7,7 @@ const MarketCategories: React.FC = () => {
     { name: 'Politics', icon: '🏛️', isImage: false },
     { name: 'Weather', icon: '🌤️', isImage: false },
     { name: 'Sport', icon: '/images/sports.png', isImage: true },
-    { name: 'Entertainment', icon: '/images/fun2.png', isImage: true },
+    { name: 'Entertainment', icon: '🎬', isImage: false },
     { name: 'Other', icon: '📊', isImage: false }
   ];
 
@@ -27,7 +27,7 @@ const MarketCategories: React.FC = () => {
       
       <div className="w-full max-w-[1200px] grid grid-cols-3 grid-rows-2 gap-[50px] p-10 px-[50px] z-[1] md:grid-cols-2 md:grid-rows-3 md:gap-5 md:p-5">
         {categories.map((category, index) => (
-          <div key={index} className="w-full h-[120px] flex flex-row items-center justify-start gap-5 p-5 rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px] md:h-[100px] md:gap-[15px] md:p-[15px]">
+          <div key={index} className="w-full h-[120px] flex flex-row items-center justify-center gap-8 px-5 py-5 rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px] md:h-[100px] md:gap-6 md:px-[15px] md:py-[15px]">
             <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 md:w-8 md:h-8">
               {category.isImage ? (
                 <Image
@@ -43,7 +43,12 @@ const MarketCategories: React.FC = () => {
                 <span className="text-[32px] leading-none flex items-center justify-center filter hue-rotate-[120deg] saturate-[1.5] brightness-[1.2] md:text-[24px]">{category.icon}</span>
               )}
             </div>
-            <div className="font-orbitron font-semibold text-[18px] text-white text-left m-0 leading-[1.2] tracking-[0%] md:text-[16px]">{category.name}</div>
+            <div 
+              className="font-orbitron font-semibold text-[18px] text-white text-left m-0 leading-[1.2] tracking-[0%] md:text-[16px]"
+              style={{ marginLeft: '20px' }}
+            >
+              {category.name}
+            </div>
           </div>
         ))}
       </div>

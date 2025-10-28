@@ -17,8 +17,8 @@ const WhyChooseTruce: React.FC = () => {
       
       <div className="w-full max-w-[1200px] h-[490px] flex justify-between px-5 z-[1] md:w-[90%] md:flex-col md:gap-[30px] md:h-auto">
         
-        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
-          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:scale-105 hover:rotate-1 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] shadow-[0_4px_8px_rgba(0,0,0,0.3)] z-[2]">
             <Image
               src="/images/mon1.png"
               alt="Community Monster"
@@ -29,7 +29,8 @@ const WhyChooseTruce: React.FC = () => {
               priority
             />
           </div>
-          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.4)] shadow-[0_4px_8px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.1)] transition-all duration-300 z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_6px_12px_rgba(0,0,0,0.4)] md:w-full md:h-auto md:min-h-[200px] relative">
+            <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-[#FFD700]"></div>
             <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Community</h3>
             <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
               Constant product AMM with real-time slippage calculation ensures you know exactly what you&apos;re getting with no hidden outcomes.
@@ -38,8 +39,8 @@ const WhyChooseTruce: React.FC = () => {
         </div>
 
         
-        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
-          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:scale-105 hover:-rotate-1 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] shadow-[0_4px_8px_rgba(0,0,0,0.3)] z-[2]">
             <Image
               src="/images/mon2.png"
               alt="Liquidity Monster"
@@ -50,7 +51,8 @@ const WhyChooseTruce: React.FC = () => {
               priority
             />
           </div>
-          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.4)] shadow-[0_4px_8px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.1)] transition-all duration-300 z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_6px_12px_rgba(0,0,0,0.4)] md:w-full md:h-auto md:min-h-[200px] relative">
+            <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-[#FFD700]"></div>
             <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Liquidity</h3>
             <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
               Always-on liquidity powered by automated market makers allows you to trade anytime without waiting for counterparties.
@@ -59,8 +61,8 @@ const WhyChooseTruce: React.FC = () => {
         </div>
 
         
-        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:bg-[rgba(0,255,153,0.1)] hover:opacity-70 md:w-full md:h-auto">
-          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] outline-2 outline-dashed outline-black outline-offset-[-2px] z-[2]">
+        <div className="w-[350px] h-[489px] flex flex-col bg-transparent transition-all duration-300 cursor-pointer flex-shrink-0 border-none relative hover:scale-105 hover:rotate-2 md:w-full md:h-auto">
+          <div className="w-full h-[207px] rounded-[4.5px] border-none flex items-center justify-center overflow-hidden relative bg-[#222222] shadow-[0_4px_8px_rgba(0,0,0,0.3)] z-[2]">
             <Image
               src="/images/mon3.png"
               alt="Transparency Monster"
@@ -71,7 +73,8 @@ const WhyChooseTruce: React.FC = () => {
               priority
             />
           </div>
-          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.7)] shadow-[0_0_30px_rgba(0,255,153,0.1)] transition-all duration-300 outline-2 outline-dashed outline-black outline-offset-[-2px] z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_0_50px_rgba(0,255,153,0.08)] md:w-full md:h-auto md:min-h-[200px]">
+          <div className="w-full h-[306px] flex flex-col items-center justify-start p-5 gap-4 bg-[rgba(0,255,153,0.4)] shadow-[0_4px_8px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.1)] transition-all duration-300 z-[1] -mt-[2px] hover:bg-transparent hover:shadow-[0_6px_12px_rgba(0,0,0,0.4)] md:w-full md:h-auto md:min-h-[200px] relative">
+            <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-[#FFD700]"></div>
             <h3 className="font-orbitron font-bold text-[24px] text-black text-center m-0 leading-[1.2] tracking-[0%] hover:text-[#00FF99]">Transparency</h3>
             <p className="font-orbitron font-normal text-[16px] text-black text-center leading-7 tracking-[1%] m-0 opacity-80 hover:text-[#00FF99]">
               Collective wisdom is aggregated into accurate probability estimates, rewarding users with credibility and real benefits for correct predictions.
