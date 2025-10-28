@@ -13,10 +13,12 @@ const Navbar: React.FC = () => {
       </div>
       
       <div className="flex items-center">
-        <nav className="w-[372px] h-[40px] flex items-center gap-[30px]">
-          <Link href="/Create" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Create</Link>
+        <nav className="w-[500px] h-[40px] flex items-center gap-[25px]">
+          <Link href="/Create" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Predict</Link>
           <a href="#" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Markets</a>
-          <a href="#" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Leaderboard</a>
+          <a href="#" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Dashboard</a>
+          <a href="#" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Analytics</a>
+          <a href="#" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">About</a>
         </nav>
       </div>
       
