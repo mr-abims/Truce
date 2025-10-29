@@ -157,7 +157,7 @@ const Create: NextPage = () => {
                   width: '504px',
                   height: '194.33px',
                   background: selectedCategory === category.id ? '#2F2F2F' : '#2F2F2F80',
-                  border: '2px solid #00FF73',
+                  border: '2px solid #24c786',
                   boxShadow: '4px 4px 30px 0px #00FF99, 4px 4px 120px 0px rgba(0,0,0,0.25)',
                   opacity: 1
                 }}

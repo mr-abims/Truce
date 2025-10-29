@@ -5,12 +5,12 @@ import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider, getDefaultConfig, midnightTheme } from '@rainbow-me/rainbowkit';
-import { mainnet, sepolia } from 'wagmi/chains';
+import { mainnet, sepolia, hedera, hederaTestnet } from 'wagmi/chains';
 
 const config = getDefaultConfig({
   appName: 'Truce',
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID || 'demo-project-id',
-  chains: [mainnet, sepolia],
+  chains: [mainnet, sepolia, hedera, hederaTestnet],
   ssr: true, // Enable SSR support
 });
 
