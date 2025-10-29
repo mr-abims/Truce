@@ -4,9 +4,9 @@ import Image from 'next/image';
 const HeroSection: React.FC = () => {
   return (
     <section className="w-full min-h-[800px] bg-[#101010] relative overflow-visible flex items-center justify-center">
-      
+      {/* Background Container for Figures */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-
+        {/* Left Figure - pic2.png */}
         <div className="absolute top-[147px] left-[72px] w-[392px] h-[729px] opacity-100 rotate-0 z-[1] xl:left-[20px] lg:hidden">
           <Image
             src="/images/pic2.png"
@@ -19,7 +19,7 @@ const HeroSection: React.FC = () => {
           />
         </div>
         
-        
+        {/* Right Figure - pic3.png */}
         <div className="absolute top-[148px] left-[894px] w-[526px] h-[646px] opacity-100 rotate-0 z-[1] xl:left-[calc(100%-546px)] lg:hidden">
           <Image
             src="/images/pic3.png"
@@ -42,7 +42,7 @@ const HeroSection: React.FC = () => {
         
         <div className="w-[869px] h-[50px] mx-auto flex items-center justify-center">
           <p className="font-orbitron font-semibold text-[20px] leading-[100%] tracking-[0%] text-center text-white/50 m-0">
-            Harness the Power of the Blockchain, Forecast the future of Digital Assets in Our High Stakes Prediction Board and Claim Reward
+            Harness the Power of the Blockchain, Forecast the future of Digital Assets in Our High Stakes Prediction Arena and Claim Legendary Reward
           </p>
         </div>
         
