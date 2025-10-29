@@ -9,7 +9,7 @@ import { mainnet, sepolia } from 'wagmi/chains';
 
 const config = getDefaultConfig({
   appName: 'Truce',
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID || process.env.PROJECT_ID || 'demo-project-id',
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID || 'demo-project-id',
   chains: [mainnet, sepolia],
   ssr: true, // Enable SSR support
 });
