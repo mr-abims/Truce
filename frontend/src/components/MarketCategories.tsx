@@ -25,9 +25,9 @@ const MarketCategories: React.FC = () => {
       </div>
       
       
-      <div className="w-full max-w-[1200px] grid grid-cols-3 grid-rows-2 gap-[50px] p-10 px-[50px] z-[1] md:grid-cols-2 md:grid-rows-3 md:gap-5 md:p-5">
+      <div className="w-full max-w-[1200px] grid grid-cols-3 grid-rows-2 gap-[24px] p-10 px-[50px] z-[1] md:grid-cols-2 md:grid-rows-3 md:gap-5 md:p-5">
         {categories.map((category, index) => (
-          <div key={index} className="w-full h-[120px] flex flex-row items-center justify-start gap-5 p-5 rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px] md:h-[100px] md:gap-[15px] md:p-[15px]">
+          <div key={index} className="flex flex-row items-center justify-start rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px]" style={{ width: '266px', height: '75px', padding: '10px', gap: '10px' }}>
             <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 md:w-8 md:h-8">
               {category.isImage ? (
                 <Image
