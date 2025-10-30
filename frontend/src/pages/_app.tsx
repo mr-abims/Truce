@@ -1,6 +1,6 @@
 import '../styles/globals.css';
+import '@rainbow-me/rainbowkit/styles.css';
 import type { AppProps } from 'next/app';
-import dynamic from 'next/dynamic';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
@@ -18,9 +18,13 @@ const client = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <Web3Provider>
-      <Component {...pageProps} />
-    </Web3Provider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={client}>
+        <RainbowKitProvider theme={midnightTheme()}>
+          <Component {...pageProps} />
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 
