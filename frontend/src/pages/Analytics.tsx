@@ -1,51 +1,8 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { useState } from 'react';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 
 const Analytics: NextPage = () => {
-  const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | 'all'>('7d');
-
-  const platformStats = {
-    totalVolume: '45,890 HBAR',
-    totalMarkets: 127,
-    activeUsers: 1543,
-    totalTrades: 8921,
-  };
-
-  const topMarkets = [
-    {
-      id: 't1',
-      title: 'Will Bitcoin reach $100,000 by end of 2025?',
-      category: 'Crypto',
-      volume: '2,450 HBAR',
-      trades: 234,
-    },
-    {
-      id: 't2',
-      title: 'Will Team A win the championship this season?',
-      category: 'Sports',
-      volume: '1,120 HBAR',
-      trades: 156,
-    },
-    {
-      id: 't3',
-      title: 'Will there be a recession in Q1 2025?',
-      category: 'Politics',
-      volume: '980 HBAR',
-      trades: 98,
-    },
-  ];
-
-  const categoryDistribution = [
-    { category: 'Crypto', percentage: 35, volume: '16,062 HBAR' },
-    { category: 'Sports', percentage: 28, volume: '12,849 HBAR' },
-    { category: 'Politics', percentage: 18, volume: '8,260 HBAR' },
-    { category: 'Entertainment', percentage: 12, volume: '5,507 HBAR' },
-    { category: 'Weather', percentage: 5, volume: '2,295 HBAR' },
-    { category: 'Other', percentage: 2, volume: '918 HBAR' },
-  ];
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
@@ -57,201 +14,126 @@ const Analytics: NextPage = () => {
       <Navbar />
 
       <main className="flex-1 w-full flex justify-center">
-        <div
-          className="w-full"
-          style={{
-            maxWidth: '1312px',
-            minWidth: '1200px',
-            padding: '40px 64px',
-          }}
-        >
-          {/* Header */}
+        <div className="w-full" style={{ maxWidth: '1312px', minWidth: '1200px', padding: '40px 64px', position: 'relative' }}>
           <div className="mb-8">
-            <h1 className="font-orbitron font-semibold text-[32px] text-white mb-2">
-              Platform Analytics
-            </h1>
-            <p className="font-orbitron text-[16px] text-[#CCCCCC]">
-              Real-time insights into market activity and trends
-            </p>
+            <h1 className="font-orbitron font-semibold text-[32px] text-white mb-2">Analytics</h1>
+            <p className="font-orbitron text-[16px] text-[#CCCCCC]">Platform-wide performance and market insights</p>
           </div>
 
-          {/* Timeframe Selector */}
-          <div className="flex gap-4 mb-8">
-            {(['24h', '7d', '30d', 'all'] as const).map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className="font-orbitron transition-colors duration-200"
-                style={{
-                  fontSize: '14px',
-                  padding: '8px 16px',
-                  border: '2px solid #2F2F2F',
-                  borderRadius: '6px',
-                  background: timeframe === tf ? '#00FF99' : 'transparent',
-                  color: timeframe === tf ? '#000000' : '#FFFFFF',
-                  boxShadow: timeframe === tf ? '0 0 14px #00FF99' : 'none',
-                }}
-              >
-                {tf === '24h' ? '24 Hours' : tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : 'All Time'}
-              </button>
-            ))}
-          </div>
 
-          {/* Platform Stats */}
-          <div className="grid grid-cols-4 gap-6 mb-10">
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Total Volume</div>
-              <div className="font-orbitron text-[24px] font-bold text-white">
-                {platformStats.totalVolume}
-              </div>
+          <div style={{ width: '1256px', height: '111px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', marginTop: '16px', position: 'relative' }}>
+            <div style={{ position: 'absolute', width: '77px', height: '75px', top: '18px', left: '50px', padding: '4px', gap: '8px', display: 'flex', flexDirection: 'column' }}>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '10px', lineHeight: '100%', color: '#FFFFFF' }}>Total Market</div>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 600, fontSize: '24px', lineHeight: '100%', color: '#FFFFFF' }}>427</div>
             </div>
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Total Markets</div>
-              <div className="font-orbitron text-[24px] font-bold text-white">
-                {platformStats.totalMarkets}
-              </div>
+            <div style={{ position: 'absolute', width: '0px', height: '69px', top: '21px', left: '253.83px', opacity: 0.3, borderLeft: '1px solid #FFFFFF' }} />
+            <div style={{ position: 'absolute', width: '214px', height: '75px', top: '18px', left: '315.67px', padding: '4px', gap: '8px', display: 'flex', flexDirection: 'column' }}>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '10px', lineHeight: '100%', color: '#FFFFFF' }}>Total Volume</div>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 600, fontSize: '24px', lineHeight: '100%', color: '#FFFFFF' }}>128499.47 HBAR</div>
             </div>
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Active Users</div>
-              <div className="font-orbitron text-[24px] font-bold text-white">
-                {platformStats.activeUsers}
-              </div>
+            <div style={{ position: 'absolute', width: '0px', height: '69px', top: '21px', left: '650px', opacity: 0.3, borderLeft: '1px solid #FFFFFF' }} />
+            <div style={{ position: 'absolute', width: '77px', height: '75px', top: '18px', left: '711.33px', padding: '4px', gap: '8px', display: 'flex', flexDirection: 'column' }}>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '10px', lineHeight: '100%', color: '#FFFFFF' }}>Active Users</div>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 600, fontSize: '24px', lineHeight: '100%', color: '#FFFFFF' }}>1,543</div>
             </div>
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Total Trades</div>
-              <div className="font-orbitron text-[24px] font-bold text-white">
-                {platformStats.totalTrades}
-              </div>
+            <div style={{ position: 'absolute', width: '0px', height: '69px', top: '21px', left: '978px', opacity: 0.3, borderLeft: '1px solid #FFFFFF' }} />
+            <div style={{ position: 'absolute', width: '164px', height: '75px', top: '18px', left: '1042px', padding: '4px', gap: '8px', display: 'flex', flexDirection: 'column' }}>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '10px', lineHeight: '100%', color: '#FFFFFF' }}>Aug Market Size</div>
+              <div className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 600, fontSize: '24px', lineHeight: '100%', color: '#FFFFFF' }}>8,921 HBAR</div>
             </div>
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-2 gap-8">
-            {/* Top Markets */}
-            <div>
-              <h2 className="font-orbitron font-semibold text-[24px] text-white mb-6">
-                Top Markets
-              </h2>
-              <div className="flex flex-col gap-4">
-                {topMarkets.map((market, idx) => (
-                  <div
-                    key={market.id}
-                    className="rounded-lg p-4"
-                    style={{
-                      background: '#1a1a1a',
-                      border: '2px solid #00FF73',
-                      boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-                    }}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="font-orbitron font-bold text-[20px] flex-shrink-0"
-                        style={{
-                          color: '#00FF99',
-                          width: '30px',
-                        }}
-                      >
-                        #{idx + 1}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-orbitron text-[14px] text-[#00FF99] mb-1">
-                          {market.category}
-                        </div>
-                        <div className="font-orbitron text-[16px] font-semibold text-white mb-3">
-                          {market.title}
-                        </div>
-                        <div className="flex justify-between">
-                          <div>
-                            <div className="font-orbitron text-[12px] text-[#CCCCCC]">Volume</div>
-                            <div className="font-orbitron text-[14px] text-white">
-                              {market.volume}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="font-orbitron text-[12px] text-[#CCCCCC]">Trades</div>
-                            <div className="font-orbitron text-[14px] text-white">
-                              {market.trades}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+          <div style={{ width: '1256px', display: 'flex', gap: '55px', margin: '48px auto 0 auto' }}>
+            <div style={{ width: '617px', height: '497px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', padding: '24px', position: 'relative' }}>
+              <h2 className="font-orbitron" style={{ position: 'absolute', width: '259px', height: '30px', top: '34px', left: '21px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Market Cap Distribution</h2>
+              <div style={{ width: '583px', height: '371px', position: 'absolute', top: '106px', left: '17px', gap: '29px', display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { range: '5 - 20 ETH', market: '45 Market (35.4%)', barWidth: '350px' },
+                  { range: '20 - 50 ETH', market: '32 Market (25.2%)', barWidth: '250px' },
+                  { range: '50 - 100 ETH', market: '28 Market (22.0%)', barWidth: '220px' },
+                  { range: '100+ ETH', market: '22 Market (17.4%)', barWidth: '170px' },
+                ].map((item, index) => (
+                  <div key={index} style={{ width: '583px', height: '51px', display: 'flex', flexDirection: 'column', padding: '4px', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="font-orbitron" style={{ width: '350px', height: '18px', fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.range}</span>
+                      <span className="font-orbitron" style={{ width: '143px', height: '18px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFFB2', textAlign: 'right', whiteSpace: 'nowrap' }}>{item.market}</span>
                     </div>
+                    <div style={{ width: item.barWidth, height: '10px', borderRadius: '0px', background: '#00FF99' }} />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Category Distribution */}
-            <div>
-              <h2 className="font-orbitron font-semibold text-[24px] text-white mb-6">
-                Category Distribution
-              </h2>
-              <div className="flex flex-col gap-4">
-                {categoryDistribution.map((cat) => (
-                  <div
-                    key={cat.category}
-                    className="rounded-lg p-4"
-                    style={{
-                      background: '#1a1a1a',
-                      border: '2px solid #2F2F2F',
-                    }}
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="font-orbitron text-[16px] font-semibold text-white">
-                        {cat.category}
-                      </div>
-                      <div className="font-orbitron text-[18px] font-bold text-[#00FF99]">
-                        {cat.percentage}%
-                      </div>
+            <div style={{ width: '584px', height: '497px', borderRadius: '2px', borderWidth: '2px', border: '2px solid #61616133', background: '#222222', padding: '24px', position: 'relative' }}>
+              <h2 className="font-orbitron" style={{ position: 'absolute', width: '257px', height: '30px', top: '30px', left: '13px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Volume by Categories</h2>
+              <div style={{ width: '564px', height: '394px', position: 'absolute', top: '93px', left: '10px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { icon: '/images/crypto.png', name: 'Crypto', volume: '109.00 ETH', percent: '3.8%' },
+                  { icon: '/images/sports.png', name: 'Sports', volume: '95.50 ETH', percent: '3.3%' },
+                  { icon: '/images/pol.png', name: 'Politics', volume: '87.20 ETH', percent: '3.0%' },
+                  { icon: '/images/opera.png', name: 'Entertainment', volume: '76.80 ETH', percent: '2.7%' },
+                  { icon: '/images/weath.png', name: 'Weather', volume: '64.30 ETH', percent: '2.2%' },
+                  { icon: '/images/idea.png', name: 'Other', volume: '52.40 ETH', percent: '1.8%' },
+                ].map((item, index) => (
+                  <div key={index} style={{ width: '548px', height: '46px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
+                    <div style={{ width: '141px', height: '38px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
+                      <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
+                      <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.name}</span>
                     </div>
-                    <div className="w-full bg-[#0d0d0d] rounded-full h-3 mb-2">
-                      <div
-                        className="h-3 rounded-full"
-                        style={{
-                          width: `${cat.percentage}%`,
-                          background: '#00FF99',
-                          boxShadow: '0 0 10px #00FF99',
-                        }}
-                      />
+                    <div style={{ width: '79px', height: '36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
+                      <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', letterSpacing: '0%', textAlign: 'right', color: '#FFFFFF' }}>{item.volume}</span>
+                      <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', letterSpacing: '0%', textAlign: 'right', color: '#FFFFFF' }}>{item.percent}</span>
                     </div>
-                    <div className="font-orbitron text-[12px] text-[#CCCCCC]">{cat.volume}</div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+          <div style={{ width: '1256px', height: '344px', borderRadius: '2px', borderWidth: '2px', padding: '20px', gap: '24px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto' }}>
+            <h2 className="font-orbitron" style={{ width: '1220px', height: '30px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Volume Over Time</h2>
+            <div style={{ width: '1220px', height: '250px', marginTop: '24px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[100, 80, 60, 40, 20, 0].map((value, index) => (
+                  <div key={index} style={{ width: '1219px', height: '18px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ width: '23px', height: '18px', fontFamily: 'Outfit', fontWeight: 400, fontSize: '12px', lineHeight: '150%', textAlign: 'right', color: '#FFFFFF' }}>{value}</span>
+                    <div style={{ width: '1180px', height: '0px', borderTop: '1px solid #616161' }} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ width: '1144px', height: '18px', display: 'flex', justifyContent: 'space-between', marginTop: '12px', marginLeft: '39px' }}>
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((month, index) => (
+                  <span key={index} style={{ width: '20px', height: '18px', fontFamily: 'Outfit', fontWeight: 400, fontSize: '12px', lineHeight: '150%', color: '#FFFFFF', textAlign: 'center' }}>{month}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ width: '1260px', height: '502px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto', padding: '20px', position: 'relative' }}>
+            <h2 className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Top Market by Volume</h2>
+            <div style={{ width: '1195px', height: '315px', position: 'absolute', top: '140px', left: '33px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
+              {[
+                { icon: '/images/crypto.png', name: 'Crypto', volume: '234.50 ETH', percent: '2.5%', isPositive: true },
+                { icon: '/images/sports.png', name: 'Sports', volume: '198.30 ETH', percent: '1.8%', isPositive: true },
+                { icon: '/images/pol.png', name: 'Politics', volume: '176.90 ETH', percent: '-0.5%', isPositive: false },
+                { icon: '/images/opera.png', name: 'Entertainment', volume: '154.20 ETH', percent: '3.2%', isPositive: true },
+                { icon: '/images/weath.png', name: 'Weather', volume: '132.80 ETH', percent: '-1.2%', isPositive: false },
+                { icon: '/images/idea.png', name: 'Other', volume: '108.40 ETH', percent: '0.9%', isPositive: true },
+              ].map((item, index) => (
+                <div key={index} style={{ width: '1179px', height: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
+                  <div style={{ width: '303px', height: '28px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
+                    <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
+                    <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', color: '#FFFFFF' }}>{item.name}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span className="font-orbitron" style={{ width: '83px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: '#FFFFFF' }}>{item.volume}</span>
+                    <span className="font-orbitron" style={{ width: '39px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: item.isPositive ? '#0F9C14' : '#A31111' }}>{item.percent}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

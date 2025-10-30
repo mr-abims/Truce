@@ -1,7 +1,8 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -207,16 +208,37 @@ const mockMarkets = [
     trades: 401,
     users: 156,
   },
+  {
+    id: 'm20',
+    title: 'Will Nigeria qualify for the 2026 World Cup?',
+    category: 'Sports',
+    icon: '/images/sports.png',
+    volume: '1,500 HBAR',
+    ends: 'Mar 15, 2026',
+    trades: 623,
+    users: 234,
+  },
 ];
 
 type FilterKey = 'Trending' | 'Ending Soon' | 'High Value' | 'Newest' | 'Closed';
 type CategoryKey = 'All' | 'Crypto' | 'Sports' | 'Politics' | 'Entertainment' | 'Weather' | 'Other';
 
 const Markets: NextPage = () => {
+  const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>('Trending');
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const marketsPerPage = 4;
+
+  // Set category from URL query parameter on page load
+  useEffect(() => {
+    if (router.isReady && router.query.category) {
+      const category = router.query.category as string;
+      if (['Crypto', 'Sports', 'Politics', 'Entertainment', 'Weather', 'Other'].includes(category)) {
+        setSelectedCategory(category as CategoryKey);
+      }
+    }
+  }, [router.isReady, router.query.category]);
 
   const parseVolumeHBAR = (v: string): number => {
     const num = v.replace(/[^0-9.]/g, '');

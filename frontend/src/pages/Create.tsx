@@ -21,43 +21,38 @@ const Create: NextPage = () => {
       id: 'sports',
       name: 'Sports',
       icon: '/images/sports.png',
-      description: 'Game outcomes, tournaments, player performance',
-      cap: 'Cap: 20 HBAR - 2,000 HBAR'
+      description: 'Game outcomes, tournaments, player performance'
+
     },
     {
       id: 'politics',
       name: 'Politics',
       icon: '/images/pol.png',
-      description: 'Local, States, Federal - Predict changes in the political landscape',
-      cap: 'Cap: 20 HBAR - 2,000 HBAR'
+      description: 'Local, States, Federal - Predict changes in the political landscape'
     },
     {
       id: 'entertainment',
       name: 'Entertainment',
       icon: '/images/opera.png',
-      description: 'Award, releases, box office, Celebrity events',
-      cap: 'Cap: 10 HBAR - 300 HBAR'
+    description: 'Award, releases, box office, Celebrity events'
     },
     {
       id: 'weather',
       name: 'Weather',
       icon: '/images/weath.png',
-      description: 'Local forecasts climate events, natural phenomenal',
-      cap: 'Cap: 20 HBAR - 200 HBAR'
+      description: 'Local forecasts climate events, natural phenomenal'
     },
     {
       id: 'other',
       name: 'Other',
       icon: '/images/idea.png',
-      description: 'See the world shift before the headlines do',
-      cap: 'Cap: 200 HBAR - 900 HBAR'
+      description: 'See the world shift before the headlines do'
     },
     {
       id: 'crypto',
       name: 'Crypto',
       icon: '/images/crypto.png',
-      description: 'Token prices, DeFi events, blockchain developments',
-      cap: 'Cap: 20 HBAR - 1,000 HBAR'
+      description: 'Token prices, DeFi events, blockchain developments'
     }
   ];
 
@@ -206,7 +201,7 @@ const Create: NextPage = () => {
                     className="text-white"
                     style={{
                       fontFamily: 'Orbitron',
-                      fontWeight: 700,
+                      fontWeight: 500,
                       fontSize: '16px',
                       lineHeight: '100%',
                       letterSpacing: '0%'
@@ -228,18 +223,6 @@ const Create: NextPage = () => {
                     position: 'absolute'
                   }}
                 >
-                  <p
-                    className="text-white"
-                    style={{
-                      fontFamily: 'Orbitron',
-                      fontWeight: 700,
-                      fontSize: '16px',
-                      lineHeight: '100%',
-                      letterSpacing: '0%'
-                    }}
-                  >
-                    {category.cap}
-                  </p>
                 </div>
               </div>
             ))}
