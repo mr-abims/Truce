@@ -61,10 +61,30 @@ const About: NextPage = () => {
         >
           {/* Hero Section */}
           <div className="mb-16 text-center">
-            <h1 className="font-orbitron font-bold text-[48px] text-white mb-4">
+            <h1 
+              className="font-orbitron font-bold text-[48px] text-white mb-6"
+              style={{
+                fontFamily: 'Orbitron',
+                fontWeight: 700,
+                fontSize: '48px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+              }}
+            >
               About Truce
             </h1>
-            <p className="font-orbitron text-[18px] text-[#CCCCCC] max-w-[800px] mx-auto leading-relaxed">
+            <p 
+              className="font-orbitron text-[18px] text-[#CCCCCC] max-w-[800px] mx-auto"
+              style={{
+                fontFamily: 'Orbitron',
+                fontWeight: 400,
+                fontSize: '18px',
+                lineHeight: '150%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+              }}
+            >
               Truce is a decentralized prediction market platform built on blockchain technology. 
               We empower users to forecast future events and earn rewards for accurate predictions, 
               all while maintaining transparency and fairness.

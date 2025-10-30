@@ -1,34 +1,82 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useState } from 'react';
+import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const Dashboard: NextPage = () => {
-  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
+  const [currentActivityPage, setCurrentActivityPage] = useState(1);
+  const activitiesPerPage = 4;
 
   const mockActivePositions = [
+    // Bitcoin prediction - headline.png
     {
       id: 'p1',
-      market: 'Will Bitcoin reach $100,000 by end of 2025?',
-      position: 'YES',
-      shares: 50,
-      avgPrice: '0.68 HBAR',
-      currentPrice: '0.72 HBAR',
-      value: '36 HBAR',
-      pnl: '+5.88%',
+      type: 'headline',
+      question: 'Bitcoin price',
+      time: '2 hours ago',
+      profit: '+$500',
     },
+    // Ethereum prediction - downline.png
     {
       id: 'p2',
-      market: 'Will Team A win the championship this season?',
-      position: 'NO',
-      shares: 30,
-      avgPrice: '0.45 HBAR',
-      currentPrice: '0.42 HBAR',
-      value: '12.6 HBAR',
-      pnl: '-6.67%',
+      type: 'downline',
+      question: 'Ethereum price',
+      time: '4 hours ago',
+      profit: '-$250',
+    },
+    // Sports prediction - headline.png
+    {
+      id: 'p3',
+      type: 'headline',
+      question: 'Lakers vs Warriors',
+      time: '1 day ago',
+      profit: '+$120',
+    },
+    // Politics prediction - downline.png
+    {
+      id: 'p4',
+      type: 'downline',
+      question: 'Election outcome',
+      time: '3 days ago',
+      profit: '-$80',
+    },
+    // User created prediction - create.png
+    {
+      id: 'p5',
+      type: 'create',
+      question: 'Nigeria World Cup Qualification',
+      time: '1 week ago',
+      profit: '+$300',
+    },
+    // Weather prediction - headline.png
+    {
+      id: 'p6',
+      type: 'headline',
+      question: 'Weather forecast',
+      time: '5 days ago',
+      profit: '+$75',
     },
   ];
+
+  // Calculate pagination for activities
+  const totalActivityPages = Math.ceil(mockActivePositions.length / activitiesPerPage);
+  const startActivityIndex = (currentActivityPage - 1) * activitiesPerPage;
+  const endActivityIndex = startActivityIndex + activitiesPerPage;
+  const currentActivities = mockActivePositions.slice(startActivityIndex, endActivityIndex);
+
+  const handleActivityPrevPage = () => {
+    setCurrentActivityPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleActivityNextPage = () => {
+    setCurrentActivityPage(prev => Math.min(prev + 1, totalActivityPages));
+  };
+
+  const goToActivityPage = (page: number) => {
+    setCurrentActivityPage(page);
+  };
 
   const mockHistory = [
     {
@@ -82,200 +130,798 @@ const Dashboard: NextPage = () => {
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-3 gap-6 mb-10">
+          <div 
+            style={{
+              width: '1256px',
+              height: '133px',
+              borderRadius: '2px',
+              borderWidth: '2px',
+              opacity: 1,
+              background: '#222222',
+              border: '2px solid #61616133',
+              position: 'relative',
+              marginBottom: '40px',
+            }}
+          >
+            {/* Contents Container */}
             <div
-              className="rounded-lg p-6"
               style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
+                width: '1146px',
+                height: '114px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                opacity: 1,
+                position: 'absolute',
+                top: '10px',
+                left: '55px',
+                padding: '8px',
               }}
             >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Total Volume</div>
-              <div className="font-orbitron text-[28px] font-bold text-white">128.5 HBAR</div>
-            </div>
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Active Markets</div>
-              <div className="font-orbitron text-[28px] font-bold text-white">2</div>
-            </div>
-            <div
-              className="rounded-lg p-6"
-              style={{
-                background: '#1a1a1a',
-                border: '2px solid #00FF73',
-                boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
-              }}
-            >
-              <div className="font-orbitron text-[14px] text-[#CCCCCC] mb-2">Total P&L</div>
-              <div className="font-orbitron text-[28px] font-bold text-[#00FF99]">+3 HBAR</div>
+              {/* 1st Content - Portfolio Value */}
+              <div
+                style={{
+                  width: '167px',
+                  height: '98px',
+                  opacity: 1,
+                  padding: '4px',
+                  gap: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div className="font-orbitron text-[14px] text-[#CCCCCC]">Portfolio Value</div>
+                <div className="font-orbitron text-[28px] font-bold text-white">$12,745.57</div>
+                <div className="font-orbitron text-[14px] font-bold text-[#00FF99]">+12.5%</div>
+              </div>
+
+              {/* 2nd Content - Active Predictions */}
+              <div
+                style={{
+                  width: '157px',
+                  height: '98px',
+                  opacity: 1,
+                  padding: '4px',
+                  gap: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div className="font-orbitron text-[14px] text-[#CCCCCC]">Active Prediction</div>
+                <div className="font-orbitron text-[28px] font-bold text-white">3</div>
+                <div className="font-orbitron text-[12px] text-[#CCCCCC]">Total payout: $1,593.20</div>
+              </div>
+
+              {/* 3rd Content - Win Rate */}
+              <div
+                style={{
+                  width: '111px',
+                  height: '98px',
+                  opacity: 1,
+                  padding: '4px',
+                  gap: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div className="font-orbitron text-[14px] text-[#CCCCCC]">Win Rate</div>
+                <div className="font-orbitron text-[28px] font-bold text-white">66.7%</div>
+                <div className="font-orbitron text-[12px] text-[#CCCCCC]">9 Won/ 3 Lost</div>
+              </div>
+
+              {/* 4th Content - Net Profit */}
+              <div
+                style={{
+                  width: '95px',
+                  height: '98px',
+                  opacity: 1,
+                  padding: '4px',
+                  gap: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div className="font-orbitron text-[14px] text-[#CCCCCC]">Net Profit</div>
+                <div className="font-orbitron text-[28px] font-bold text-[#00FF99]">$750</div>
+                <div className="font-orbitron text-[12px] text-[#CCCCCC]">Total: $4049.12</div>
+              </div>
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-4 mb-6">
-            <button
-              onClick={() => setActiveTab('active')}
-              className="font-orbitron transition-colors duration-200"
+          {/* Recent Activity Container */}
+          <div
+            style={{
+              width: '1256px',
+              height: '619px',
+              borderRadius: '2px',
+              border: '1px solid #B3B3B380',
+              opacity: 1,
+              padding: '24px',
+            }}
+          >
+            {/* Recent Activity Header */}
+            <div
               style={{
-                fontSize: '16px',
-                padding: '10px 20px',
-                border: '2px solid #2F2F2F',
-                borderRadius: '6px',
-                background: activeTab === 'active' ? '#00FF99' : 'transparent',
-                color: activeTab === 'active' ? '#000000' : '#FFFFFF',
-                boxShadow: activeTab === 'active' ? '0 0 14px #00FF99' : 'none',
+                width: '191px',
+                height: '61px',
+                borderRadius: '12px',
+                gap: '10px',
+                paddingTop: '4px',
+                paddingRight: '8px',
+                paddingBottom: '4px',
+                paddingLeft: '8px',
+                opacity: 1,
+                marginBottom: '24px',
               }}
             >
-              Active Positions
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className="font-orbitron transition-colors duration-200"
-              style={{
-                fontSize: '16px',
-                padding: '10px 20px',
-                border: '2px solid #2F2F2F',
-                borderRadius: '6px',
-                background: activeTab === 'history' ? '#00FF99' : 'transparent',
-                color: activeTab === 'history' ? '#000000' : '#FFFFFF',
-                boxShadow: activeTab === 'history' ? '0 0 14px #00FF99' : 'none',
-              }}
-            >
-              History
-            </button>
-          </div>
+              <h2
+                className="font-orbitron"
+                style={{
+                  fontFamily: 'Orbitron',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: '#FFFFFF',
+                  margin: 0,
+                }}
+              >
+                Recent Activity
+              </h2>
+            </div>
 
-          {/* Active Positions */}
-          {activeTab === 'active' && (
-            <div className="flex flex-col gap-4">
-              {mockActivePositions.map((pos) => (
+            {/* Active Positions */}
+            <div className="flex flex-col" style={{ gap: '12px' }}>
+              {currentActivities.map((pos) => (
                 <div
                   key={pos.id}
-                  className="rounded-lg p-5"
+                  className="rounded-lg"
                   style={{
-                    background: '#1a1a1a',
-                    border: '2px solid #00FF73',
-                    boxShadow: '0 0 18px #00FF99, 0 0 35px rgba(0, 255, 153, 0.4)',
+                    width: '1171px',
+                    height: '93px',
+                    gap: '12px',
+                    opacity: 1,
+                    background: '#222222',
+                    border: '1px solid #FFFFFF1A',
+                    padding: '16px',
                   }}
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <div className="font-orbitron text-[18px] font-semibold text-white mb-2">
-                        {pos.market}
-                      </div>
-                      <div
-                        className="inline-block px-3 py-1 rounded font-orbitron text-[12px] font-bold"
-                        style={{
-                          background: pos.position === 'YES' ? '#00FF99' : '#FF3366',
-                          color: '#000000',
-                        }}
-                      >
-                        {pos.position}
-                      </div>
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div
-                      className="font-orbitron text-[20px] font-bold"
                       style={{
-                        color: pos.pnl.startsWith('+') ? '#00FF99' : '#FF3366',
+                        width: '50px',
+                        height: '40px',
+                        borderRadius: '5px',
+                        padding: '10px',
+                        gap: '10px',
+                        opacity: 1,
+                        background: 
+                          pos.type === 'headline' 
+                            ? '#0F9C141A' 
+                            : pos.type === 'downline' 
+                            ? '#A705051A' 
+                            : '#0066CC1A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {pos.pnl}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4">
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Shares</div>
-                      <div className="font-orbitron text-[14px] text-white">{pos.shares}</div>
-                    </div>
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Avg Price</div>
-                      <div className="font-orbitron text-[14px] text-white">{pos.avgPrice}</div>
-                    </div>
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Current Price</div>
-                      <div className="font-orbitron text-[14px] text-white">{pos.currentPrice}</div>
-                    </div>
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Value</div>
-                      <div className="font-orbitron text-[14px] text-white">{pos.value}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* History */}
-          {activeTab === 'history' && (
-            <div className="flex flex-col gap-4">
-              {mockHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-lg p-5"
-                  style={{
-                    background: '#1a1a1a',
-                    border: '2px solid #2F2F2F',
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <div className="font-orbitron text-[18px] font-semibold text-white mb-2">
-                        {item.market}
-                      </div>
-                      <div className="flex gap-2">
-                        <div
-                          className="inline-block px-3 py-1 rounded font-orbitron text-[12px] font-bold"
-                          style={{
-                            background: item.position === 'YES' ? '#00FF99' : '#FF3366',
-                            color: '#000000',
-                          }}
-                        >
-                          {item.position}
-                        </div>
-                        <div
-                          className="inline-block px-3 py-1 rounded font-orbitron text-[12px] font-bold"
-                          style={{
-                            background: item.outcome === 'WON' ? '#00FF99' : '#FF3366',
-                            color: '#000000',
-                          }}
-                        >
-                          {item.outcome}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div
-                        className="font-orbitron text-[20px] font-bold"
+                      <Image
+                        src={
+                          pos.type === 'headline' 
+                            ? '/images/headline.png' 
+                            : pos.type === 'downline' 
+                            ? '/images/downline.png' 
+                            : '/images/create.png'
+                        }
+                        alt={
+                          pos.type === 'headline' 
+                            ? 'Headline' 
+                            : pos.type === 'downline' 
+                            ? 'Downline' 
+                            : 'Create'
+                        }
+                        width={30}
+                        height={20}
                         style={{
-                          color: item.profit.startsWith('+') ? '#00FF99' : '#FF3366',
+                          transform: pos.type === 'downline' ? 'rotate(180deg)' : 'none',
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        width: '174px',
+                        height: '44px',
+                        gap: '12px',
+                        opacity: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <div
+                        className="font-orbitron"
+                        style={{
+                          fontFamily: 'Orbitron',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '100%',
+                          letterSpacing: '0%',
+                          color: '#FFFFFF',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
-                        {item.profit}
+                        {pos.question}
                       </div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">{item.date}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Invested</div>
-                      <div className="font-orbitron text-[14px] text-white">{item.invested}</div>
-                    </div>
-                    <div>
-                      <div className="font-orbitron text-[12px] text-[#CCCCCC]">Returned</div>
-                      <div className="font-orbitron text-[14px] text-white">{item.returned}</div>
+                      <div
+                        className="font-orbitron"
+                        style={{
+                          fontFamily: 'Orbitron',
+                          fontWeight: 400,
+                          fontSize: '12px',
+                          lineHeight: '100%',
+                          letterSpacing: '0%',
+                          color: '#CCCCCC',
+                        }}
+                      >
+                        {pos.time} • {pos.profit}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
+
+            {/* Activity Pagination */}
+            <div
+              style={{
+                width: '100%',
+                height: '56px',
+                padding: '8px',
+                gap: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: '8px',
+              }}
+            >
+              <button
+                onClick={handleActivityPrevPage}
+                disabled={currentActivityPage === 1}
+                style={{
+                  width: '25px',
+                  height: '25px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: currentActivityPage === 1 ? '#666666' : '#CCCCCC',
+                  cursor: currentActivityPage === 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                ←
+              </button>
+              
+              {Array.from({ length: totalActivityPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToActivityPage(page)}
+                  className="font-orbitron"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    background: page === currentActivityPage ? '#00FF99' : 'transparent',
+                    color: page === currentActivityPage ? '#000000' : '#FFFFFF',
+                    fontFamily: 'Orbitron',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {page}
+                </button>
+              ))}
+              
+              <button
+                onClick={handleActivityNextPage}
+                disabled={currentActivityPage === totalActivityPages}
+                style={{
+                  width: '25px',
+                  height: '25px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: currentActivityPage === totalActivityPages ? '#666666' : '#CCCCCC',
+                  cursor: currentActivityPage === totalActivityPages ? 'not-allowed' : 'pointer',
+                }}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          {/* Active Prediction Container */}
+          <div
+            style={{
+              width: '1256px',
+              height: '800px',
+              opacity: 1,
+              borderRadius: '2px',
+              border: '1px solid #B3B3B380',
+              marginTop: '24px',
+              padding: '32px 34px',
+            }}
+          >
+            <div
+              style={{
+                width: '183px',
+                height: '40px',
+                opacity: 1,
+                padding: '10px',
+                gap: '10px',
+                marginBottom: '40px',
+              }}
+            >
+              <h2
+                className="font-orbitron"
+                style={{
+                  fontFamily: 'Orbitron',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: '#FFFFFF',
+                  margin: 0,
+                }}
+              >
+                Active Prediction
+              </h2>
+            </div>
+
+            {/* Table Header */}
+            <div
+              style={{
+                width: '1171px',
+                height: '40px',
+                opacity: 1,
+                borderRadius: '2px',
+                marginTop: '48px',
+                marginLeft: '42px',
+                padding: '8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              {/* Market Header */}
+              <div
+                style={{
+                  width: '200px',
+                  height: '40px',
+                  padding: '4px',
+                  gap: '14px',
+                  opacity: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  className="font-orbitron"
+                  style={{
+                    fontFamily: 'Orbitron',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#CCCCCC',
+                    margin: 0,
+                  }}
+                >
+                  Market
+                </div>
+              </div>
+
+              {/* Prediction Header */}
+              <div
+                style={{
+                  width: '100px',
+                  height: '40px',
+                  padding: '4px',
+                  gap: '14px',
+                  opacity: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  className="font-orbitron"
+                  style={{
+                    fontFamily: 'Orbitron',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#CCCCCC',
+                    margin: 0,
+                  }}
+                >
+                  Prediction
+                </div>
+              </div>
+
+              {/* Amount Header */}
+              <div
+                style={{
+                  width: '120px',
+                  height: '40px',
+                  padding: '4px',
+                  gap: '14px',
+                  opacity: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  className="font-orbitron"
+                  style={{
+                    fontFamily: 'Orbitron',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#CCCCCC',
+                    margin: 0,
+                  }}
+                >
+                  Amount
+                </div>
+              </div>
+
+              {/* Potential Payout Header */}
+              <div
+                style={{
+                  width: '150px',
+                  height: '40px',
+                  padding: '4px',
+                  gap: '14px',
+                  opacity: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  className="font-orbitron"
+                  style={{
+                    fontFamily: 'Orbitron',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#CCCCCC',
+                    margin: 0,
+                  }}
+                >
+                  Potential Payout
+                </div>
+              </div>
+            </div>
+
+            {/* Data Container */}
+            <div
+              style={{
+                width: '1255px',
+                height: '457px',
+                opacity: 1,
+                borderRadius: '2px',
+                position: 'relative',
+                marginTop: '12px',
+              }}
+            >
+
+              {/* Data Rows */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '1171px',
+                  height: '102px',
+                  top: '100px',
+                  left: '42px',
+                  padding: '8px',
+                  opacity: 1,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px solid #B3B3B380',
+                }}
+              >
+                {/* Market Column */}
+                <div style={{width: '200px', height: '52px', padding: '4px', gap: '14px', opacity: 1, display: 'flex', flexDirection: 'column'}}>
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    Bitcoin price
+                  </div>
+                </div>
+
+                {/* Prediction Column */}
+                <div
+                  style={{
+                    width: '100px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 600, fontSize: '12px', lineHeight: '100%', letterSpacing: '0%', color: '#1AB412', margin: 0}}>
+                    up
+                  </div>
+                </div>
+
+                {/* Amount Column */}
+                <div
+                  style={{
+                    width: '120px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $500
+                  </div>
+                </div>
+
+                {/* Potential Payout Column */}
+                <div
+                  style={{
+                    width: '150px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $1000
+                  </div>
+                </div>
+              </div>
+
+              {/* Second row */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '1171px',
+                  height: '102px',
+                  top: '220px',
+                  left: '42px',
+                  padding: '8px',
+                  opacity: 1,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px solid #B3B3B380',
+                }}
+              >
+                {/* Market Column */}
+                <div style={{width: '200px', height: '52px', padding: '4px', gap: '14px', opacity: 1, display: 'flex', flexDirection: 'column'}}>
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    Ethereum price
+                  </div>
+                </div>
+
+                {/* Prediction Column */}
+                <div
+                  style={{
+                    width: '100px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 600, fontSize: '12px', lineHeight: '100%', letterSpacing: '0%', color: '#FF3366', margin: 0}}>
+                    down
+                  </div>
+                </div>
+
+                {/* Amount Column */}
+                <div
+                  style={{
+                    width: '120px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $300
+                  </div>
+                </div>
+
+                {/* Potential Payout Column */}
+                <div
+                  style={{
+                    width: '150px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $600
+                  </div>
+                </div>
+              </div>
+
+              {/* Third row */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '1171px',
+                  height: '102px',
+                  top: '340px',
+                  left: '42px',
+                  padding: '8px',
+                  opacity: 1,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderTop: '1px solid #B3B3B380',
+                }}
+              >
+                {/* Market Column */}
+                <div style={{width: '200px', height: '52px', padding: '4px', gap: '14px', opacity: 1, display: 'flex', flexDirection: 'column'}}>
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    Sports match
+                  </div>
+                </div>
+
+                {/* Prediction Column */}
+                <div
+                  style={{
+                    width: '100px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 600, fontSize: '12px', lineHeight: '100%', letterSpacing: '0%', color: '#FF3366', margin: 0}}>
+                    down
+                  </div>
+                </div>
+
+                {/* Amount Column */}
+                <div
+                  style={{
+                    width: '120px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $150
+                  </div>
+                </div>
+
+                {/* Potential Payout Column */}
+                <div
+                  style={{
+                    width: '150px',
+                    height: '52px',
+                    padding: '4px',
+                    gap: '14px',
+                    opacity: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div className="font-orbitron" style={{fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF', margin: 0}}>
+                    $300
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Prediction Pagination */}
+            <div
+              style={{
+                width: '100%',
+                height: '56px',
+                padding: '8px',
+                gap: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: '24px',
+              }}
+            >
+              <button
+                style={{
+                  width: '25px',
+                  height: '25px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#CCCCCC',
+                  cursor: 'pointer',
+                }}
+              >
+                ←
+              </button>
+              
+              <button
+                className="font-orbitron"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: '#00FF99',
+                  color: '#000000',
+                  fontFamily: 'Orbitron',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                1
+              </button>
+              
+              <button
+                style={{
+                  width: '25px',
+                  height: '25px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#CCCCCC',
+                  cursor: 'pointer',
+                }}
+              >
+                →
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 
@@ -285,4 +931,3 @@ const Dashboard: NextPage = () => {
 };
 
 export default Dashboard;
-

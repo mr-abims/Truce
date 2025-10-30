@@ -1,12 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const MarketCategories: React.FC = () => {
   const categories = [
     { name: 'Crypto', icon: '/images/crypto.png', isImage: true },
     { name: 'Politics', icon: '🏛️', isImage: false },
     { name: 'Weather', icon: '🌤️', isImage: false },
-    { name: 'Sport', icon: '/images/sports.png', isImage: true },
+    { name: 'Sports', icon: '/images/sports.png', isImage: true },
     { name: 'Entertainment', icon: '🎬', isImage: false },
     { name: 'Other', icon: '📊', isImage: false }
   ];
@@ -23,7 +24,12 @@ const MarketCategories: React.FC = () => {
       
       <div className="w-full max-w-[1200px] grid grid-cols-3 grid-rows-2 gap-[24px] p-10 px-[50px] z-[1] md:grid-cols-2 md:grid-rows-3 md:gap-5 md:p-5">
         {categories.map((category, index) => (
-          <div key={index} className="flex flex-row items-center justify-start rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px]" style={{ width: '266px', height: '75px', padding: '10px', gap: '10px' }}>
+          <Link 
+            key={index} 
+            href={`/Markets?category=${category.name}`}
+            className="flex flex-row items-center justify-start rounded-lg border-none bg-[#222222] transition-all duration-300 cursor-pointer hover:bg-[rgba(0,255,153,0.1)] hover:shadow-[0_0_20px_rgba(0,255,153,0.3)] hover:-translate-y-[2px] no-underline" 
+            style={{ width: '266px', height: '75px', padding: '10px', gap: '10px' }}
+          >
             <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 md:w-8 md:h-8">
               {category.isImage ? (
                 <Image
@@ -40,7 +46,7 @@ const MarketCategories: React.FC = () => {
               )}
             </div>
             <div className="font-orbitron font-semibold text-[18px] text-white text-left m-0 leading-[1.2] tracking-[0%] md:text-[16px]">{category.name}</div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

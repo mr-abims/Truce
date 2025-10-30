@@ -66,30 +66,64 @@ const Analytics: NextPage = () => {
           }}
         >
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="font-orbitron font-semibold text-[32px] text-white mb-2">
-              Platform Analytics
+          <div className="mb-12">
+            <h1 
+              className="font-orbitron font-bold text-[48px] text-white mb-4"
+              style={{
+                fontFamily: 'Orbitron',
+                fontWeight: 700,
+                fontSize: '48px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+              }}
+            >
+              Analytics
             </h1>
-            <p className="font-orbitron text-[16px] text-[#CCCCCC]">
-              Real-time insights into market activity and trends
+            <p 
+              className="font-orbitron text-[18px] text-[#CCCCCC] max-w-[600px] mx-auto"
+              style={{
+                fontFamily: 'Orbitron',
+                fontWeight: 400,
+                fontSize: '18px',
+                lineHeight: '150%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+              }}
+            >
+              Comprehensive insights into market performance and user engagement
             </p>
           </div>
 
           {/* Timeframe Selector */}
-          <div className="flex gap-4 mb-8">
+          <div 
+            className="flex justify-center mb-12"
+            style={{
+              width: '601px',
+              height: '38px',
+              margin: '0 auto 48px auto',
+              background: '#1A1A1A',
+              borderRadius: '2px',
+              padding: '4px',
+              gap: '4px',
+            }}
+          >
             {(['24h', '7d', '30d', 'all'] as const).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
                 className="font-orbitron transition-colors duration-200"
                 style={{
+                  flex: 1,
                   fontSize: '14px',
                   padding: '8px 16px',
-                  border: '2px solid #2F2F2F',
-                  borderRadius: '6px',
-                  background: timeframe === tf ? '#00FF99' : 'transparent',
+                  border: 'none',
+                  borderRadius: '4px',
+                  background: timeframe === tf ? '#24c786' : 'transparent',
                   color: timeframe === tf ? '#000000' : '#FFFFFF',
-                  boxShadow: timeframe === tf ? '0 0 14px #00FF99' : 'none',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'Orbitron',
+                  fontWeight: 500,
                 }}
               >
                 {tf === '24h' ? '24 Hours' : tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : 'All Time'}
