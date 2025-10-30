@@ -1,13 +1,28 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useMemo, useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { 
+  useAllMarketsData, 
+  calculateMarketVolume, 
+  isMarketClosed,
+  formatMarketDate,
+  getCategoryName,
+  getCategoryIcon,
+  type MarketInfo 
+} from '../hooks/useMarketsList';
 
-const mockMarkets = [
-  // Crypto markets
+const MOCK_USER_COUNTS = [290, 245, 187, 112, 156, 198, 142, 289, 201, 145]; // Mock user counts since not tracked on-chain
+
+const getMockUsers = (index: number): number => {
+  return MOCK_USER_COUNTS[index % MOCK_USER_COUNTS.length] || 0;
+};
+
+const OLD_MOCK_MARKETS = [
+  // Crypto markets - THESE ARE NOW COMMENTED OUT
   {
     id: 'm1',
     title: 'Will Bitcoin reach $100,000 by end of 2025?',
@@ -208,93 +223,84 @@ const mockMarkets = [
     trades: 401,
     users: 156,
   },
-  {
-    id: 'm20',
-    title: 'Will Nigeria qualify for the 2026 World Cup?',
-    category: 'Sports',
-    icon: '/images/sports.png',
-    volume: '1,500 HBAR',
-    ends: 'Mar 15, 2026',
-    trades: 623,
-    users: 234,
-  },
 ];
 
 type FilterKey = 'Trending' | 'Ending Soon' | 'High Value' | 'Newest' | 'Closed';
 type CategoryKey = 'All' | 'Crypto' | 'Sports' | 'Politics' | 'Entertainment' | 'Weather' | 'Other';
 
 const Markets: NextPage = () => {
-  const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>('Trending');
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const marketsPerPage = 4;
 
-  // Set category from URL query parameter on page load
-  useEffect(() => {
-    if (router.isReady && router.query.category) {
-      const category = router.query.category as string;
-      if (['Crypto', 'Sports', 'Politics', 'Entertainment', 'Weather', 'Other'].includes(category)) {
-        setSelectedCategory(category as CategoryKey);
-      }
-    }
-  }, [router.isReady, router.query.category]);
+  // Fetch real blockchain data
+  const { markets: blockchainMarkets, isLoading, totalCount } = useAllMarketsData();
 
-  const parseVolumeHBAR = (v: string): number => {
-    const num = v.replace(/[^0-9.]/g, '');
-    return Number(num || '0');
-  };
-
-  const parseEndsDate = (d: string): number => {
-    const ts = Date.parse(d);
-    return Number.isNaN(ts) ? 0 : ts;
-  };
-
-  const getClosingText = (endDate: string): string => {
-    const now = Date.now();
-    const end = parseEndsDate(endDate);
-    if (end < now) {
+  const getClosingText = (deadlineSeconds: number): string => {
+    const now = Math.floor(Date.now() / 1000);
+    const deadline = deadlineSeconds;
+    
+    if (deadline < now) {
       return 'Ended';
     }
-    const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.ceil((deadline - now) / 86400);
     if (daysLeft === 1) return 'Closes in 1 day';
     return `Closes in ${daysLeft} days`;
   };
 
   const filteredMarkets = useMemo(() => {
-    const now = Date.now();
-    let list = [...mockMarkets];
+    if (!blockchainMarkets || blockchainMarkets.length === 0) {
+      return [];
+    }
+
+    let list = [...blockchainMarkets];
     
     // Apply category filter first
     if (selectedCategory !== 'All') {
-      list = list.filter(m => m.category === selectedCategory);
+      const categoryMap: Record<CategoryKey, number> = {
+        'All': -1,
+        'Crypto': 0,
+        'Sports': 1,
+        'Politics': 2,
+        'Weather': 3,
+        'Entertainment': 4,
+        'Other': 5,
+      };
+      const categoryId = categoryMap[selectedCategory];
+      list = list.filter(m => m.category === categoryId);
     }
     
     // Then apply status filter
     if (selectedFilter === 'Closed') {
       // Show only closed markets
-      list = list.filter(m => parseEndsDate(m.ends) < now);
+      list = list.filter(m => isMarketClosed(m));
     } else {
       // Exclude closed markets from all other filters
-      list = list.filter(m => parseEndsDate(m.ends) >= now);
+      list = list.filter(m => !isMarketClosed(m));
       
       switch (selectedFilter) {
         case 'Ending Soon':
-          list.sort((a, b) => parseEndsDate(a.ends) - parseEndsDate(b.ends));
+          list.sort((a, b) => a.resolutionDeadline - b.resolutionDeadline);
           break;
         case 'High Value':
         case 'Trending':
-          list.sort((a, b) => parseVolumeHBAR(b.volume) - parseVolumeHBAR(a.volume));
+          list.sort((a, b) => {
+            const volumeA = Number(a.totalYesShares + a.totalNoShares);
+            const volumeB = Number(b.totalYesShares + b.totalNoShares);
+            return volumeB - volumeA;
+          });
           break;
         case 'Newest':
+          list.sort((a, b) => b.createdAt - a.createdAt);
+          break;
         default:
-          // keep insertion order for demo
           break;
       }
     }
     
     return list;
-  }, [selectedFilter, selectedCategory]);
+  }, [blockchainMarkets, selectedFilter, selectedCategory]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredMarkets.length / marketsPerPage);
@@ -433,59 +439,93 @@ const Markets: NextPage = () => {
             ))}
           </div>
 
+          {/* Loading state */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#00FF99] mx-auto mb-4"></div>
+                <div className="text-white font-orbitron text-xl">Loading Markets...</div>
+                <div className="text-[#888888] font-orbitron text-sm mt-2">Fetching from blockchain</div>
+              </div>
+            </div>
+          )}
+
+          {/* No markets state */}
+          {!isLoading && filteredMarkets.length === 0 && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="text-white font-orbitron text-2xl mb-4">No Markets Found</div>
+                <div className="text-[#888888] font-orbitron text-sm">
+                  {blockchainMarkets.length === 0 
+                    ? 'No markets have been created yet. Be the first to create one!' 
+                    : 'No markets match your filters. Try adjusting your selection.'}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* markets list */}
-          <div className="flex flex-col" style={{ gap: '14px' }}>
-            {currentMarkets.map((m) => (
-              <div
-                key={m.id}
-                className="cursor-pointer relative"
-                style={{
-                  background: '#1a1a1a',
-                  width: '1241px',
-                  height: '148px',
-                  borderRadius: '2px',
-                  opacity: 1,
-                  padding: '16px 18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                {/* User Icon and Count */}
-                <div style={{ position: 'absolute', top: '4px', left: '1px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Image 
-                    src="/images/user.png" 
-                    alt="user" 
-                    width={15} 
-                    height={15} 
-                    style={{ 
-                      opacity: 1,
-                      filter: 'brightness(0) saturate(100%) invert(82%) sepia(47%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)'
-                    }} 
-                  />
-                  <span 
-                    className="font-orbitron"
-                    style={{
-                      fontFamily: 'Orbitron',
-                      fontWeight: 700,
-                      fontSize: '10px',
-                      lineHeight: '100%',
-                      letterSpacing: '0%',
-                      textAlign: 'center',
-                      color: '#00FF99',
-                    }}
-                  >
-                    {m.users}
-                  </span>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '55%' }}>
-                  <Image src={m.icon} alt={m.category} width={32} height={32} className="rounded" />
-                  <div>
-                    <div className="text-white font-orbitron" style={{ fontWeight: 700, fontSize: '14px' }}>{m.category}</div>
-                    <div className="text-white font-orbitron" style={{ fontWeight: 600, fontSize: '16px', lineHeight: '120%', marginTop: '4px' }}>{m.title}</div>
-                  </div>
-                </div>
+          {!isLoading && filteredMarkets.length > 0 && (
+            <div className="flex flex-col" style={{ gap: '14px' }}>
+              {currentMarkets.map((m, index) => {
+                const volume = calculateMarketVolume(m);
+                const categoryName = getCategoryName(m.category);
+                const categoryIcon = getCategoryIcon(m.category);
+                const endsDate = formatMarketDate(m.resolutionDeadline);
+                const mockUsers = getMockUsers(index);
+
+                return (
+                  <Link href={`/market/${m.address}`} key={m.address}>
+                    <div
+                      className="cursor-pointer relative transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,153,0.4)] hover:scale-[1.01]"
+                      style={{
+                        background: 'linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)',
+                        width: '1241px',
+                        height: '148px',
+                        borderRadius: '6px',
+                        opacity: 1,
+                        padding: '16px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        border: '1px solid #2A2A2A',
+                      }}
+                    >
+                      {/* User Icon and Count */}
+                      <div style={{ position: 'absolute', top: '4px', left: '1px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Image 
+                          src="/images/user.png" 
+                          alt="user" 
+                          width={15} 
+                          height={15} 
+                          style={{ 
+                            opacity: 1,
+                            filter: 'brightness(0) saturate(100%) invert(82%) sepia(47%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)'
+                          }} 
+                        />
+                        <span 
+                          className="font-orbitron"
+                          style={{
+                            fontFamily: 'Orbitron',
+                            fontWeight: 700,
+                            fontSize: '10px',
+                            lineHeight: '100%',
+                            letterSpacing: '0%',
+                            textAlign: 'center',
+                            color: '#00FF99',
+                          }}
+                        >
+                          {mockUsers}
+                        </span>
+                      </div>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '55%' }}>
+                        <Image src={categoryIcon} alt={categoryName} width={32} height={32} className="rounded" />
+                        <div>
+                          <div className="text-white font-orbitron" style={{ fontWeight: 700, fontSize: '14px' }}>{categoryName}</div>
+                          <div className="text-white font-orbitron" style={{ fontWeight: 600, fontSize: '16px', lineHeight: '120%', marginTop: '4px' }}>{m.question}</div>
+                        </div>
+                      </div>
                 {/* Yes/No Buttons */}
                 <div 
                   style={{ 
@@ -548,58 +588,63 @@ const Markets: NextPage = () => {
                     </button>
                 </div>
                 
-                {/* Closes in badge */}
-                <div 
-                  style={{
-                    position: 'absolute',
-                    bottom: '17px',
-                    left: '18px',
-                    minWidth: '102px',
-                    height: '18px',
-                    borderRadius: '10px',
-                    padding: '4px 8px',
-                    gap: '4px',
-                    background: '#FEC428',
-                    opacity: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <span
-                    className="font-orbitron"
-                    style={{
-                      fontFamily: 'Orbitron',
-                      fontWeight: 700,
-                      fontSize: '8px',
-                      lineHeight: '100%',
-                      letterSpacing: '0%',
-                      textAlign: 'center',
-                      color: '#000000',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {getClosingText(m.ends)}
-                  </span>
-                </div>
+                      {/* Closes in badge */}
+                      <div 
+                        style={{
+                          position: 'absolute',
+                          bottom: '17px',
+                          left: '18px',
+                          minWidth: '102px',
+                          height: '18px',
+                          borderRadius: '10px',
+                          padding: '4px 8px',
+                          gap: '4px',
+                          background: '#FEC428',
+                          opacity: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <span
+                          className="font-orbitron"
+                          style={{
+                            fontFamily: 'Orbitron',
+                            fontWeight: 700,
+                            fontSize: '8px',
+                            lineHeight: '100%',
+                            letterSpacing: '0%',
+                            textAlign: 'center',
+                            color: '#000000',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {getClosingText(m.resolutionDeadline)}
+                        </span>
+                      </div>
 
-                {/* Volume and Trades */}
-                <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', gap: '24px', bottom: '23px', right: '18px' }}>
-                  <div className="font-orbitron text-[#CCCCCC] text-[12px]">
-                    <div>Volume</div>
-                    <div className="text-white text-[14px]" style={{ marginTop: '2px', textAlign: 'right' }}>{m.volume}</div>
-                  </div>
-                  <div className="font-orbitron text-[#CCCCCC] text-[12px] text-right">
-                    <div>Trades</div>
-                    <div className="text-white text-[14px]" style={{ marginTop: '2px' }}>{m.trades}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                      {/* Volume and Trades */}
+                      <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', gap: '24px', bottom: '23px', right: '18px' }}>
+                        <div className="font-orbitron text-[#CCCCCC] text-[12px]">
+                          <div>Volume</div>
+                          <div className="text-white text-[14px]" style={{ marginTop: '2px', textAlign: 'right' }}>
+                            {Number(volume).toFixed(2)} ETH
+                          </div>
+                        </div>
+                        <div className="font-orbitron text-[#CCCCCC] text-[12px] text-right">
+                          <div>Trades</div>
+                          <div className="text-white text-[14px]" style={{ marginTop: '2px' }}>{m.tradeCount}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
           {/* Pagination Navigation */}
-          {filteredMarkets.length > 0 && (
+          {!isLoading && filteredMarkets.length > 0 && (
             <div
               style={{
                 display: 'flex',

@@ -17,7 +17,9 @@ contract TruceFactory is ITruceFactory {
     mapping(address => bool) public isValidMarket;
     mapping(address => address[]) public marketsByCreator;
     mapping(MarketCategory => address[]) public marketsByCategory;
-    mapping(MarketCategory => uint256) public categoryMaxCaps;
+
+    // Dispute tracking
+    mapping(address => uint256) public creatorDisputeCount;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
@@ -26,14 +28,6 @@ contract TruceFactory is ITruceFactory {
 
     constructor() {
         owner = msg.sender;
-
-        // Set max caps per category
-        categoryMaxCaps[MarketCategory.CRYPTO] = 1000 ether;
-        categoryMaxCaps[MarketCategory.SPORTS] = 500 ether;
-        categoryMaxCaps[MarketCategory.POLITICS] = 2000 ether;
-        categoryMaxCaps[MarketCategory.WEATHER] = 100 ether;
-        categoryMaxCaps[MarketCategory.ENTERTAINMENT] = 300 ether;
-        categoryMaxCaps[MarketCategory.OTHER] = 200 ether;
     }
 
     function createMarket(
@@ -45,11 +39,9 @@ contract TruceFactory is ITruceFactory {
         require(_resolutionDeadline > block.timestamp + MIN_RESOLUTION_TIME, "Resolution too soon");
         require(_resolutionDeadline < block.timestamp + MAX_RESOLUTION_TIME, "Resolution too late");
 
-        uint256 maxCap = categoryMaxCaps[_category];
-
         // Deploy new market contract
         TruceMarket market = new TruceMarket{value: msg.value}(
-            _question, _resolutionDeadline, _initialLiquidity, _category, msg.sender, maxCap
+            _question, _resolutionDeadline, _initialLiquidity, _category, msg.sender
         );
 
         address marketAddress = address(market);
@@ -92,14 +84,66 @@ contract TruceFactory is ITruceFactory {
         return allMarkets[_index];
     }
 
-    function updateCategoryMaxCap(MarketCategory _category, uint256 _maxCap) external onlyOwner {
-        categoryMaxCaps[_category] = _maxCap;
+    function resolveMarketDispute(address _market, bool _disputeValid) external onlyOwner {
+        require(isValidMarket[_market], "Invalid market");
+
+        ITruceMarket market = ITruceMarket(_market);
+        ITruceMarket.MarketData memory data = market.getMarketData();
+
+        require(data.state == ITruceMarket.MarketState.Disputed, "No active dispute");
+
+        if (_disputeValid) {
+            creatorDisputeCount[data.creator]++;
+        }
+
+        market.resolveDispute(_disputeValid);
+    }
+
+    function getPendingDisputes() external view returns (address[] memory) {
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < allMarkets.length; i++) {
+            ITruceMarket market = ITruceMarket(allMarkets[i]);
+            ITruceMarket.MarketData memory data = market.getMarketData();
+            if (data.state == ITruceMarket.MarketState.Disputed) {
+                count++;
+            }
+        }
+
+        address[] memory disputed = new address[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < allMarkets.length; i++) {
+            ITruceMarket market = ITruceMarket(allMarkets[i]);
+            ITruceMarket.MarketData memory data = market.getMarketData();
+            if (data.state == ITruceMarket.MarketState.Disputed) {
+                disputed[index] = allMarkets[i];
+                index++;
+            }
+        }
+
+        return disputed;
+    }
+
+    function getCreatorReputation(address _creator)
+        external
+        view
+        returns (uint256 marketsCreated, uint256 disputesLost, uint256 reputationScore)
+    {
+        marketsCreated = marketsByCreator[_creator].length;
+        disputesLost = creatorDisputeCount[_creator];
+
+        reputationScore = marketsCreated > 0 ? 100 - ((disputesLost * 100) / marketsCreated) : 100;
     }
 
     function withdrawFees() external onlyOwner {
         uint256 amount = totalPlatformFees;
         totalPlatformFees = 0;
         payable(owner).transfer(amount);
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(owner).transfer(balance);
     }
 
     receive() external payable {}

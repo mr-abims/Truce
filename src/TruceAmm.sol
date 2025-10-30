@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "./ITruce.sol";
+import {ITruceMarket} from "./ITruce.sol";
 
 library TruceAMM {
     uint256 private constant PRECISION = 1e18;

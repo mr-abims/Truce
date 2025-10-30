@@ -4,12 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAccount } from 'wagmi';
 import Navbar from '../components/Navbar';
+import { useCreateMarket } from '../hooks/useTruceFactory';
 
 const CreateForm: NextPage = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(2);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { address, isConnected } = useAccount();
+  const { createMarket, isPending, isConfirming, isSuccess, error } = useCreateMarket();
 
   useEffect(() => {
     if (router.query.category) {
@@ -107,12 +111,37 @@ const CreateForm: NextPage = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // Basic validation for liquidity before submit
+  const handleSubmit = async () => {
+    // Basic validation
     if (!initialLiquidity.trim() || Number(initialLiquidity) <= 0) return;
-    // TODO: hook up real create API/contract call here
-    router.push('/');
+    if (!selectedCategory) return;
+    if (!isConnected) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    try {
+      // Convert deadline to Unix timestamp (in seconds)
+      const deadline = Math.floor(new Date(deadlineValue).getTime() / 1000);
+      
+      // Create the market on-chain
+      await createMarket(
+        questionValue,
+        deadline,
+        initialLiquidity,
+        selectedCategory
+      );
+    } catch (error) {
+      console.error('Error creating market:', error);
+    }
   };
+
+  // Redirect to markets page on success
+  useEffect(() => {
+    if (isSuccess) {
+      router.push('/Markets');
+    }
+  }, [isSuccess, router]);
 
   const renderStep1 = () => (
     <div 
@@ -654,18 +683,18 @@ const CreateForm: NextPage = () => {
                 borderRadius: '8px',
                 border: '2px solid #FFFFFF',
                 background: 'transparent',
-                opacity: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) ? 0.5 : 1,
-                cursor: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) ? 'not-allowed' : 'pointer'
+                opacity: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) || isPending || isConfirming ? 0.5 : 1,
+                cursor: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) || isPending || isConfirming ? 'not-allowed' : 'pointer'
               }}
-              disabled={(currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0))}
+              disabled={(currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) || isPending || isConfirming}
             >
               <span 
                 className="font-orbitron text-[14px]"
                 style={{
-                  color: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) ? '#666666' : '#FFFFFF'
+                  color: (currentStep === 2 && (!questionValue.trim() || !descriptionValue.trim())) || (currentStep === 3 && !deadlineValue.trim()) || (currentStep === 4 && (!initialLiquidity.trim() || Number(initialLiquidity) <= 0)) || isPending || isConfirming ? '#666666' : '#FFFFFF'
                 }}
               >
-                {currentStep === 4 ? 'Create Market' : 'Next ›'}
+                {isPending || isConfirming ? 'Creating...' : currentStep === 4 ? 'Create Market' : 'Next ›'}
               </span>
             </button>
           </div>
