@@ -151,10 +151,17 @@ const Create: NextPage = () => {
                 style={{
                   width: '504px',
                   height: '194.33px',
-                  background: selectedCategory === category.id ? '#2F2F2F' : '#2F2F2F80',
-                  border: '2px solid #24c786',
-                  boxShadow: '4px 4px 30px 0px #00FF99, 4px 4px 120px 0px rgba(0,0,0,0.25)',
-                  opacity: 1
+                  background: selectedCategory === category.id 
+                    ? 'linear-gradient(135deg, #2F2F2F 0%, #1a1a1a 100%)' 
+                    : 'rgba(47, 47, 47, 0.4)',
+                  border: selectedCategory === category.id 
+                    ? '3px solid #00FF99' 
+                    : '2px solid rgba(36, 199, 134, 0.3)',
+                  boxShadow: selectedCategory === category.id 
+                    ? '0 0 30px rgba(0, 255, 153, 0.6), 0 0 60px rgba(0, 255, 153, 0.3), inset 0 0 20px rgba(0, 255, 153, 0.1)' 
+                    : '4px 4px 30px rgba(0, 255, 153, 0.1)',
+                  opacity: 1,
+                  transform: selectedCategory === category.id ? 'scale(1.02)' : 'scale(1)'
                 }}
                 onClick={() => handleCategorySelect(category.id)}
               >
@@ -178,11 +185,25 @@ const Create: NextPage = () => {
                       fontWeight: 700,
                       fontSize: '20px',
                       lineHeight: '100%',
-                      letterSpacing: '0%'
+                      letterSpacing: '0%',
+                      color: selectedCategory === category.id ? '#00FF99' : '#FFFFFF'
                     }}
                   >
                     {category.name}
                   </span>
+                  {selectedCategory === category.id && (
+                    <span
+                      style={{
+                        marginLeft: '8px',
+                        fontFamily: 'Orbitron',
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        color: '#00FF99'
+                      }}
+                    >
+                      ✓
+                    </span>
+                  )}
                 </div>
 
                 <div

@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
       
       <div className="flex items-center justify-center">
         <nav className="w-[650px] h-[40px] flex items-center gap-[25px]">
-        <Link href="/Dashboard" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Dashboard</Link>
+       
           <Link href="/Create" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Predict</Link>
           <Link href="/Markets" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Markets</Link>
           <Link href="/Analytics" className="text-white no-underline font-orbitron text-[16px] font-medium transition-colors duration-300 hover:text-[#00FF99]">Analytics</Link>
