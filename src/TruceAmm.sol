@@ -1,14 +1,24 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.20;
 
-import "./ITruce.sol";
+import {ITruceMarket} from "./ITruce.sol";
 
+/// @title TruceAMM - Automated Market Maker Library
+/// @notice Implements constant product (x*y=k) AMM for binary prediction markets
+/// @dev Used by TruceMarket for share pricing and liquidity calculations
 library TruceAMM {
     uint256 private constant PRECISION = 1e18;
 
     error InsufficientLiquidity();
     error InvalidAmount();
 
+    /// @notice Calculate shares received for a given ETH amount
+    /// @param yesReserves Current YES share reserves
+    /// @param noReserves Current NO share reserves
+    /// @param ethAmount Amount of ETH being spent
+    /// @param isYes Whether buying YES (true) or NO (false) shares
+    /// @return sharesOut Amount of shares to be received
+    /// @dev Uses constant product formula: k = x * y
     function calculateSharesOut(uint256 yesReserves, uint256 noReserves, uint256 ethAmount, bool isYes)
         internal
         pure
@@ -39,6 +49,13 @@ library TruceAMM {
         if (sharesOut == 0) revert InsufficientLiquidity();
     }
 
+    /// @notice Calculate ETH received for selling shares
+    /// @param yesReserves Current YES share reserves
+    /// @param noReserves Current NO share reserves
+    /// @param sharesIn Amount of shares being sold
+    /// @param isYes Whether selling YES (true) or NO (false) shares
+    /// @return ethOut Amount of ETH to be received
+    /// @dev Uses constant product formula: k = x * y
     function calculateEthOut(uint256 yesReserves, uint256 noReserves, uint256 sharesIn, bool isYes)
         internal
         pure
@@ -64,6 +81,12 @@ library TruceAMM {
         if (ethOut >= (yesReserves + noReserves) / 2) revert InsufficientLiquidity();
     }
 
+    /// @notice Get current price for YES or NO shares
+    /// @param yesReserves Current YES share reserves
+    /// @param noReserves Current NO share reserves
+    /// @param isYes Whether getting price for YES (true) or NO (false)
+    /// @return price Price in wei (scaled by PRECISION)
+    /// @dev Price is the ratio of opposite reserve to total reserves
     function getPrice(uint256 yesReserves, uint256 noReserves, bool isYes) internal pure returns (uint256 price) {
         if (yesReserves == 0 || noReserves == 0) {
             return PRECISION / 2;
@@ -78,6 +101,11 @@ library TruceAMM {
         }
     }
 
+    /// @notice Calculate market cap utilization percentage
+    /// @param totalReserves Total reserves (YES + NO)
+    /// @param currentCap Current market cap limit
+    /// @return Utilization in basis points (0-10000, where 10000 = 100%)
+    /// @dev Used to determine when to grow market cap
     function getCapUtilization(uint256 totalReserves, uint256 currentCap) internal pure returns (uint256) {
         if (currentCap == 0) return 0;
         return (totalReserves * 10000) / currentCap;

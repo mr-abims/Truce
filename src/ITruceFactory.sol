@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
-import "./ITruce.sol";
+import {ITruceMarket} from "./ITruce.sol";
 
 interface ITruceFactory {
     enum MarketCategory {
@@ -29,9 +29,17 @@ interface ITruceFactory {
         MarketCategory _category
     ) external payable returns (address);
 
+    function collectFee() external payable;
+
     function getAllMarkets() external view returns (address[] memory);
     function getMarketsByCreator(address _creator) external view returns (address[] memory);
     function getMarketsByCategory(MarketCategory _category) external view returns (address[] memory);
     function getMarketCount() external view returns (uint256);
     function isValidMarket(address _market) external view returns (bool);
+    function resolveMarketDispute(address _market, bool _disputeValid) external;
+    function getPendingDisputes() external view returns (address[] memory);
+    function getCreatorReputation(address _creator)
+        external
+        view
+        returns (uint256 marketsCreated, uint256 disputesLost, uint256 reputationScore);
 }
