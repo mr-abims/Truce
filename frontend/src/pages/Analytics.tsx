@@ -1,6 +1,8 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import { useMemo } from 'react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAllMarketsData, calculateMarketVolume } from '../hooks/useMarketsList';
@@ -135,8 +137,6 @@ const Analytics: NextPage = () => {
             <h1 className="font-orbitron font-semibold text-[32px] text-white mb-2">Analytics</h1>
             <p className="font-orbitron text-[16px] text-[#CCCCCC]">Platform-wide performance and market insights</p>
           </div>
-
-
           {/* Loading state */}
           {isLoading && (
             <div className="flex items-center justify-center py-20">
@@ -181,33 +181,13 @@ const Analytics: NextPage = () => {
             </div>
           )}
 
-            <div style={{ width: '584px', height: '497px', borderRadius: '2px', borderWidth: '2px', border: '2px solid #61616133', background: '#222222', padding: '24px', position: 'relative' }}>
-              <h2 className="font-orbitron" style={{ position: 'absolute', width: '257px', height: '30px', top: '30px', left: '13px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Volume by Categories</h2>
-              <div style={{ width: '564px', height: '394px', position: 'absolute', top: '93px', left: '10px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
-                {[
-                  { icon: '/images/crypto.png', name: 'Crypto', volume: '109.00 ETH', percent: '3.8%' },
-                  { icon: '/images/sports.png', name: 'Sports', volume: '95.50 ETH', percent: '3.3%' },
-                  { icon: '/images/pol.png', name: 'Politics', volume: '87.20 ETH', percent: '3.0%' },
-                  { icon: '/images/opera.png', name: 'Entertainment', volume: '76.80 ETH', percent: '2.7%' },
-                  { icon: '/images/weath.png', name: 'Weather', volume: '64.30 ETH', percent: '2.2%' },
-                  { icon: '/images/idea.png', name: 'Other', volume: '52.40 ETH', percent: '1.8%' },
-                ].map((item, index) => (
-                  <div key={index} style={{ width: '548px', height: '46px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
-                    <div style={{ width: '141px', height: '38px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
-                      <Image src={item.icon} alt={item.name} width={30} height={30} />
-                      <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div style={{ width: '584px', height: '497px', borderRadius: '2px', borderWidth: '2px', border: '2px solid #61616133', background: '#222222', padding: '24px', position: 'relative' }}>
                 <h2 className="font-orbitron" style={{ position: 'absolute', width: '257px', height: '30px', top: '30px', left: '13px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Volume by Categories</h2>
                 <div style={{ width: '564px', height: '394px', position: 'absolute', top: '93px', left: '10px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
                   {categoryVolumes.map((item, index) => (
                     <div key={index} style={{ width: '548px', height: '46px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
                       <div style={{ width: '141px', height: '38px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
-                        <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
+                        <Image src={item.icon} alt={item.name} width={30} height={30} />
                         <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.name}</span>
                       </div>
                       <div style={{ width: '79px', height: '36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -218,8 +198,7 @@ const Analytics: NextPage = () => {
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+          </div>
           {!isLoading && (
             <div style={{ width: '1256px', height: '400px', borderRadius: '2px', borderWidth: '2px', padding: '20px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto' }}>
               <div className="flex items-center justify-between mb-6">
@@ -273,7 +252,7 @@ const Analytics: NextPage = () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+          </div>
           )}
 
           <div style={{ width: '1260px', height: '502px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto', padding: '20px', position: 'relative' }}>
@@ -298,8 +277,7 @@ const Analytics: NextPage = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          )}
+          </div>
         </div>
       </main>
 
