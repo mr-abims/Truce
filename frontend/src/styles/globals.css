@@ -13,6 +13,57 @@ body {
   overflow-x: hidden;
 }
 
+/* Global h3 color */
+h3 {
+  color: #00FF99 !important;
+}
+
+.font-roboto,
+.font-roboto * {
+  font-family: 'Roboto', sans-serif !important;
+  line-height: 100% !important;
+}
+
+/* Paragraph and list line height */
+.font-roboto p,
+.font-roboto ol,
+.font-roboto ul,
+.font-roboto li {
+  line-height: 1.6 !important;
+}
+
+/* Unified sidebar/TOC block layout */
+.sidebar-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  row-gap: 8px;
+  min-width: 85px;
+  width: max-content;
+  min-height: 373px;
+  padding: 8px;
+  position: sticky;
+  top: 14px;
+  margin-left: 102px;
+}
+
+/* Sidebar and TOC hover color */
+aside nav a:hover {
+  color: #00FF99 !important;
+}
+
+/* Sidebar and TOC item sizing */
+aside nav a,
+aside h3,
+aside h4 {
+  display: inline-block;
+  white-space: nowrap;
+  min-width: 69px;
+  width: max-content;
+  min-height: 22px;
+  padding: 4px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
