@@ -1,5 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
+import Image from 'next/image';
 import Navbar from '../components/Navbar';
 
 const Analytics: NextPage = () => {
@@ -77,7 +78,7 @@ const Analytics: NextPage = () => {
                 ].map((item, index) => (
                   <div key={index} style={{ width: '548px', height: '46px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
                     <div style={{ width: '141px', height: '38px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
-                      <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
+                      <Image src={item.icon} alt={item.name} width={30} height={30} />
                       <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.name}</span>
                     </div>
                     <div style={{ width: '79px', height: '36px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -121,7 +122,7 @@ const Analytics: NextPage = () => {
               ].map((item, index) => (
                 <div key={index} style={{ width: '1179px', height: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
                   <div style={{ width: '303px', height: '28px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
-                    <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
+                    <Image src={item.icon} alt={item.name} width={30} height={30} />
                     <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', color: '#FFFFFF' }}>{item.name}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
