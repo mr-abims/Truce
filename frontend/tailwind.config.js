@@ -9,6 +9,7 @@ module.exports = {
     extend: {
       fontFamily: {
         'orbitron': ['Orbitron', 'monospace'],
+        'roboto': ['Roboto', 'sans-serif'],
       },
       colors: {
         background: '#000000',

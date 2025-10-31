@@ -1,7 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { useMemo } from 'react';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAllMarketsData, calculateMarketVolume } from '../hooks/useMarketsList';
@@ -182,23 +181,21 @@ const Analytics: NextPage = () => {
             </div>
           )}
 
-          {!isLoading && (
-            <div style={{ width: '1256px', display: 'flex', gap: '55px', margin: '48px auto 0 auto' }}>
-              <div style={{ width: '617px', height: '497px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', padding: '24px', position: 'relative' }}>
-                <h2 className="font-orbitron" style={{ position: 'absolute', width: '259px', height: '30px', top: '34px', left: '21px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Market Cap Distribution</h2>
-                <div style={{ width: '583px', height: '371px', position: 'absolute', top: '106px', left: '17px', gap: '29px', display: 'flex', flexDirection: 'column' }}>
-                  {[
-                    { range: '< 1 ETH', market: '45 Market (35.4%)', barWidth: '350px' },
-                    { range: '1 - 5 ETH', market: '32 Market (25.2%)', barWidth: '250px' },
-                    { range: '5 - 10 ETH', market: '28 Market (22.0%)', barWidth: '220px' },
-                    { range: '10+ ETH', market: '22 Market (17.4%)', barWidth: '170px' },
-                  ].map((item, index) => (
-                    <div key={index} style={{ width: '583px', height: '51px', display: 'flex', flexDirection: 'column', padding: '4px', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span className="font-orbitron" style={{ width: '350px', height: '18px', fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.range}</span>
-                        <span className="font-orbitron" style={{ width: '143px', height: '18px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#888888', textAlign: 'right', whiteSpace: 'nowrap' }}>{item.market}</span>
-                      </div>
-                      <div style={{ width: item.barWidth, height: '10px', borderRadius: '2px', background: '#00FF99' }} />
+            <div style={{ width: '584px', height: '497px', borderRadius: '2px', borderWidth: '2px', border: '2px solid #61616133', background: '#222222', padding: '24px', position: 'relative' }}>
+              <h2 className="font-orbitron" style={{ position: 'absolute', width: '257px', height: '30px', top: '30px', left: '13px', fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Volume by Categories</h2>
+              <div style={{ width: '564px', height: '394px', position: 'absolute', top: '93px', left: '10px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
+                {[
+                  { icon: '/images/crypto.png', name: 'Crypto', volume: '109.00 ETH', percent: '3.8%' },
+                  { icon: '/images/sports.png', name: 'Sports', volume: '95.50 ETH', percent: '3.3%' },
+                  { icon: '/images/pol.png', name: 'Politics', volume: '87.20 ETH', percent: '3.0%' },
+                  { icon: '/images/opera.png', name: 'Entertainment', volume: '76.80 ETH', percent: '2.7%' },
+                  { icon: '/images/weath.png', name: 'Weather', volume: '64.30 ETH', percent: '2.2%' },
+                  { icon: '/images/idea.png', name: 'Other', volume: '52.40 ETH', percent: '1.8%' },
+                ].map((item, index) => (
+                  <div key={index} style={{ width: '548px', height: '46px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
+                    <div style={{ width: '141px', height: '38px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
+                      <Image src={item.icon} alt={item.name} width={30} height={30} />
+                      <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', letterSpacing: '0%', color: '#FFFFFF' }}>{item.name}</span>
                     </div>
                   ))}
                 </div>
@@ -279,29 +276,28 @@ const Analytics: NextPage = () => {
             </div>
           )}
 
-          {!isLoading && categoryVolumes.length > 0 && (
-            <div style={{ width: '1260px', height: '502px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto', padding: '20px', position: 'relative' }}>
-              <h2 className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Top Categories by Volume</h2>
-              <div style={{ width: '1195px', height: '315px', position: 'absolute', top: '140px', left: '33px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
-                {categoryVolumes.map((item, index) => {
-                  const volumeNum = parseFloat(item.volume);
-                  const isPositive = volumeNum > 0;
-                  return (
-                    <div key={index} style={{ width: '1179px', height: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
-                      <div style={{ width: '303px', height: '28px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
-                        <img src={item.icon} alt={item.name} style={{ width: '30px', height: '30px' }} />
-                        <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', color: '#FFFFFF' }}>{item.name}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <span className="font-orbitron" style={{ width: '83px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: '#00FF99' }}>{item.volume}</span>
-                        <span className="font-orbitron" style={{ width: '50px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: '#888888' }}>
-                          {item.percent}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+          <div style={{ width: '1260px', height: '502px', borderRadius: '2px', borderWidth: '2px', background: '#222222', border: '2px solid #61616133', margin: '48px auto 0 auto', padding: '20px', position: 'relative' }}>
+            <h2 className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 500, fontSize: '20px', lineHeight: '150%', color: '#FFFFFF', margin: 0 }}>Top Market by Volume</h2>
+            <div style={{ width: '1195px', height: '315px', position: 'absolute', top: '140px', left: '33px', padding: '8px', gap: '12px', display: 'flex', flexDirection: 'column' }}>
+              {[
+                { icon: '/images/crypto.png', name: 'Crypto', volume: '234.50 ETH', percent: '2.5%', isPositive: true },
+                { icon: '/images/sports.png', name: 'Sports', volume: '198.30 ETH', percent: '1.8%', isPositive: true },
+                { icon: '/images/pol.png', name: 'Politics', volume: '176.90 ETH', percent: '-0.5%', isPositive: false },
+                { icon: '/images/opera.png', name: 'Entertainment', volume: '154.20 ETH', percent: '3.2%', isPositive: true },
+                { icon: '/images/weath.png', name: 'Weather', volume: '132.80 ETH', percent: '-1.2%', isPositive: false },
+                { icon: '/images/idea.png', name: 'Other', volume: '108.40 ETH', percent: '0.9%', isPositive: true },
+              ].map((item, index) => (
+                <div key={index} style={{ width: '1179px', height: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px' }}>
+                  <div style={{ width: '303px', height: '28px', display: 'flex', alignItems: 'center', padding: '4px', gap: '8px' }}>
+                    <Image src={item.icon} alt={item.name} width={30} height={30} />
+                    <span className="font-orbitron" style={{ fontFamily: 'Orbitron', fontWeight: 700, fontSize: '14px', lineHeight: '100%', color: '#FFFFFF' }}>{item.name}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span className="font-orbitron" style={{ width: '83px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: '#FFFFFF' }}>{item.volume}</span>
+                    <span className="font-orbitron" style={{ width: '39px', height: '18px', fontFamily: 'Orbitron', fontWeight: 400, fontSize: '12px', lineHeight: '18px', textAlign: 'right', color: item.isPositive ? '#0F9C14' : '#A31111' }}>{item.percent}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-black border-t border-[#333333] pt-[60px] pb-5 mt-20">
+    <footer className="w-full bg-black border-t border-[#333333] pt-[60px] pb-5 mt-40">
       <div className="w-full max-w-[1200px] mx-auto px-5 flex justify-between items-start gap-[60px] lg:gap-10 md:flex-col md:gap-10 md:items-center md:text-center">
         <div className="flex-none">
           <h3 className="font-orbitron font-bold text-[32px] text-[#00FF99] m-0 leading-none tracking-[0%] drop-shadow-[0_0_10px_rgba(0,255,153,0.3)] md:text-[28px] sm:text-[24px]">Truce</h3>
