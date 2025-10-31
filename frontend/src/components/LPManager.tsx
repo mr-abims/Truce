@@ -205,7 +205,7 @@ export default function LPManager({ marketAddress, marketState }: LPManagerProps
       {activeTab === 'add' && marketState === MarketState.Active && (
         <div>
           <p className="font-orbitron text-[#CCCCCC]" style={{ fontSize: '14px', marginBottom: '12px' }}>
-            Add liquidity to earn 0.4% of all trading fees. You'll receive LP tokens representing your share.
+            Add liquidity to earn 0.4% of all trading fees. You&apos;ll receive LP tokens representing your share.
           </p>
           <input
             type="number"
@@ -250,7 +250,7 @@ export default function LPManager({ marketAddress, marketState }: LPManagerProps
       {activeTab === 'remove' && marketState === MarketState.Active && (
         <div>
           <p className="font-orbitron text-[#CCCCCC]" style={{ fontSize: '14px', marginBottom: '12px' }}>
-            Remove liquidity by burning your LP tokens. You'll receive your proportional share of the pool.
+            Remove liquidity by burning your LP tokens. You&apos;ll receive your proportional share of the pool.
           </p>
           <div style={{ marginBottom: '12px' }}>
             <p className="font-orbitron text-[#CCCCCC]" style={{ fontSize: '12px', marginBottom: '4px' }}>
@@ -385,7 +385,7 @@ export default function LPManager({ marketAddress, marketState }: LPManagerProps
             }}
           >
             <p className="font-orbitron text-[#CCCCCC]" style={{ fontSize: '12px' }}>
-              You'll receive approximately:
+              You&apos;ll receive approximately:
             </p>
             <p className="font-orbitron text-[#00FF99]" style={{ fontSize: '24px', fontWeight: 700, marginTop: '8px' }}>
               {Number(formatEther(userPoolValue)).toFixed(6)} ETH
@@ -425,7 +425,7 @@ export default function LPManager({ marketAddress, marketState }: LPManagerProps
           }}
         >
           <p className="font-orbitron text-[#FEC428]" style={{ fontSize: '14px' }}>
-            LP operations are only available while the market is Active or after it's Resolved.
+            LP operations are only available while the market is Active or after it&apos;s Resolved.
           </p>
         </div>
       )}

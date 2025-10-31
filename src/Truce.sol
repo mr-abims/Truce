@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {ITruceMarket} from "./ITruce.sol";
 import {TruceAMM} from "./TruceAMM.sol";
@@ -7,6 +7,9 @@ import {ITruceFactory} from "./ITruceFactory.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+/// @title TruceMarket - Binary Prediction Market
+/// @notice A prediction market where users can trade YES/NO shares on future outcomes
+/// @dev Implements constant product AMM with dynamic caps, LP tokens, and dispute resolution
 contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
     using TruceAMM for uint256;
 
@@ -50,17 +53,26 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
     mapping(address => uint256) public noShares;
     mapping(address => bool) public hasRedeemed;
 
+    /// @notice Restricts function access to market creator only
     modifier onlyCreator() {
         require(msg.sender == creator, "Not creator");
         _;
     }
 
+    /// @notice Restricts function access to active markets before resolution deadline
     modifier onlyActive() {
         require(state == MarketState.Active, "Market not active");
         require(block.timestamp < resolutionDeadline, "Market expired");
         _;
     }
 
+    /// @notice Creates a new prediction market
+    /// @param _question The question or statement to predict
+    /// @param _resolutionDeadline Timestamp when market can be resolved
+    /// @param _initialLiquidity Initial ETH liquidity amount
+    /// @param _category Market category (Politics, Sports, Crypto, etc.)
+    /// @param _creator Address of market creator
+    /// @dev Initializes 50/50 YES/NO reserves, mints LP tokens to creator
     constructor(
         string memory _question,
         uint256 _resolutionDeadline,
@@ -111,6 +123,10 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         }
     }
 
+    /// @notice Buy YES or NO shares in the market
+    /// @param _outcome The outcome to bet on (Yes or No)
+    /// @return The amount of shares received
+    /// @dev Charges 0.5% total fee (0.1% platform + 0.4% LP), uses AMM pricing
     function buyShares(Outcome _outcome) external payable override onlyActive nonReentrant returns (uint256) {
         require(msg.value > 0, "Must send ETH");
 
@@ -159,6 +175,11 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return sharesOut;
     }
 
+    /// @notice Sell YES or NO shares back to the market
+    /// @param _outcome The outcome type of shares to sell (Yes or No)
+    /// @param _shares Amount of shares to sell
+    /// @return The amount of ETH received
+    /// @dev Charges 0.5% total fee, uses AMM pricing
     function sellShares(Outcome _outcome, uint256 _shares) external override onlyActive nonReentrant returns (uint256) {
         require(_shares > 0, "Must sell positive shares");
 
@@ -206,6 +227,9 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return netPayout;
     }
 
+    /// @notice Add liquidity to the market and receive LP tokens
+    /// @return lpTokens Amount of LP tokens minted to the provider
+    /// @dev Adds 50/50 YES/NO liquidity, LP tokens are ERC20 standard
     function addLiquidity() external payable override onlyActive nonReentrant returns (uint256 lpTokens) {
         require(msg.value > 0, "Must send ETH");
         require(msg.value >= 0.001 ether, "Minimum 0.001 ETH");
@@ -241,6 +265,10 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return lpTokens;
     }
 
+    /// @notice Remove liquidity by burning LP tokens
+    /// @param lpAmount Amount of LP tokens to burn
+    /// @return ethOut Amount of ETH returned (proportional to pool share)
+    /// @dev Returns proportional share of reserves and accumulated fees
     function removeLiquidity(uint256 lpAmount) external override nonReentrant returns (uint256 ethOut) {
         require(balanceOf(msg.sender) >= lpAmount, "Insufficient LP tokens");
         require(lpAmount > 0, "Cannot remove 0");
@@ -274,6 +302,9 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return ethOut;
     }
 
+    /// @notice Creator resolves the market with an outcome
+    /// @param _result The final outcome (Yes or No)
+    /// @dev Sets market to PendingDispute state, starts 1-day dispute period
     function resolveMarket(Outcome _result) external override onlyCreator {
         require(state == MarketState.Active, "Market not active");
         require(block.timestamp >= resolutionDeadline, "Too early to resolve");
@@ -285,6 +316,10 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         emit MarketResolved(_result);
     }
 
+    /// @notice Submit a dispute against the market resolution
+    /// @param _proposedOutcome The outcome disputer believes is correct
+    /// @param _reason Explanation for the dispute
+    /// @dev Requires 0.05 ETH bond, only losing side can dispute
     function submitDispute(Outcome _proposedOutcome, string memory _reason) external payable override {
         require(state == MarketState.PendingDispute, "Not in dispute window");
         require(block.timestamp <= disputePeriodEnd, "Dispute period ended");
@@ -316,6 +351,9 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         emit DisputeSubmitted(msg.sender, _proposedOutcome, _reason);
     }
 
+    /// @notice Factory admin resolves the dispute
+    /// @param _disputeValid Whether the dispute is valid
+    /// @dev If valid, overturns result and penalizes creator 10%. If invalid, factory keeps bonds
     function resolveDispute(bool _disputeValid) external override {
         require(msg.sender == factory, "Only factory");
         require(state == MarketState.Disputed, "No active dispute");
@@ -369,6 +407,8 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         delete disputes;
     }
 
+    /// @dev Determines the most common disputed outcome from all disputes
+    /// @return The outcome with the most dispute votes
     function _getMostCommonDisputedOutcome() internal view returns (Outcome) {
         uint256 yesCount = 0;
         uint256 noCount = 0;
@@ -384,6 +424,8 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return yesCount > noCount ? Outcome.Yes : Outcome.No;
     }
 
+    /// @notice Finalize resolution after dispute period ends with no disputes
+    /// @dev Can only be called after dispute period, sets state to Resolved
     function finalizeResolution() external override {
         require(state == MarketState.PendingDispute, "Wrong state");
         require(block.timestamp > disputePeriodEnd, "Dispute period active");
@@ -392,6 +434,9 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         emit MarketFinalized(result);
     }
 
+    /// @notice Redeem winnings after market is resolved
+    /// @return Payout amount in ETH
+    /// @dev Winners receive their proportional share of the losing side's reserves
     function redeemWinnings() external override returns (uint256) {
         require(state == MarketState.Resolved, "Market not resolved");
         require(!hasRedeemed[msg.sender], "Already redeemed");
@@ -420,6 +465,9 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return payout;
     }
 
+    /// @notice Redeem LP tokens after market resolution
+    /// @return Share of remaining pool value
+    /// @dev LPs receive proportional share of pool after winners claim
     function redeemLPTokens() external override nonReentrant returns (uint256) {
         require(state == MarketState.Resolved, "Market not resolved");
         uint256 lpBalance = balanceOf(msg.sender);
@@ -436,6 +484,8 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         return lpShare;
     }
 
+    /// @dev Attempts to grow market cap when utilization reaches threshold
+    /// @notice Automatically increases cap when 80% utilized
     function _tryGrowCap() internal {
         uint256 totalReserves = totalYesShares + totalNoShares;
         uint256 utilization = TruceAMM.getCapUtilization(totalReserves, capConfig.currentCap);
@@ -452,6 +502,8 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         }
     }
 
+    /// @notice Get comprehensive market data
+    /// @return MarketData struct containing all market information
     function getMarketData() external view override returns (MarketData memory) {
         return MarketData({
             question: question,
@@ -471,14 +523,21 @@ contract TruceMarket is ITruceMarket, ERC20, ReentrancyGuard {
         });
     }
 
+    /// @notice Get user's YES and NO shares
+    /// @param _user Address of the user
+    /// @return User's YES shares and NO shares
     function getUserShares(address _user) external view override returns (uint256, uint256) {
         return (yesShares[_user], noShares[_user]);
     }
 
+    /// @notice Get current market cap
+    /// @return Current cap in ETH
     function getCurrentCap() external view override returns (uint256) {
         return capConfig.currentCap;
     }
 
+    /// @notice Get all disputes for this market
+    /// @return Array of Dispute structs
     function getDisputes() external view override returns (Dispute[] memory) {
         return disputes;
     }

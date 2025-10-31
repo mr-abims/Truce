@@ -1,7 +1,7 @@
 import { sepolia } from 'wagmi/chains';
 
 export const TRUCE_FACTORY_ADDRESS = {
-  [sepolia.id]: '0x1F136d0160f937adf29C04473704f5B64237f190' as `0x${string}`,
+  [sepolia.id]: '0xC28779CC060C9959CC1728c3210D8d793bF6eff9' as `0x${string}`,
 } as const;
 
 // Market categories enum (must match Solidity)

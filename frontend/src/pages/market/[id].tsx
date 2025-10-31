@@ -8,7 +8,7 @@ import { formatEther, type Address } from 'viem';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import LPManager from '../../components/LPManager';
-import { useGetMarketData, useGetUserShares, useBuyShares } from '../../hooks/useTruceMarket';
+import { useGetMarketData, useGetUserShares, useBuyShares, useGetRecentTrades } from '../../hooks/useTruceMarket';
 import { Outcome, MarketState } from '../../config/contracts';
 
 // Mock data for development/testing
@@ -57,9 +57,54 @@ const mockMarkets: Record<string, any> = {
   },
 };
 
+// Helper to infer category from question text (for markets with invalid category stored)
+const inferCategoryFromQuestion = (question: string): number => {
+  const q = question.toLowerCase();
+  
+  // Sports keywords
+  if (q.match(/\b(win|championship|ballondor|ballon d'or|podium|grand prix|nba|playoffs|sports|team|game|match|tournament|league|player)\b/)) {
+    return 1; // Sports
+  }
+  
+  // Politics keywords
+  if (q.match(/\b(election|vote|president|government|politics|political|un|congress|senate|policy|law)\b/)) {
+    return 2; // Politics
+  }
+  
+  // Entertainment keywords
+  if (q.match(/\b(grammy|oscar|award|movie|music|album|singer|artist|entertainment|celebrity|box office|release)\b/)) {
+    return 4; // Entertainment
+  }
+  
+  // Weather keywords
+  if (q.match(/\b(weather|temperature|rain|snow|hurricane|storm|climate|forecast)\b/)) {
+    return 3; // Weather
+  }
+  
+  // Crypto keywords
+  if (q.match(/\b(bitcoin|ethereum|crypto|token|blockchain|defi|btc|eth|price)\b/)) {
+    return 0; // Crypto
+  }
+  
+  return 5; // Other (default)
+};
+
 // Helper to get category name from enum
-const getCategoryName = (categoryEnum: number): string => {
+const getCategoryName = (categoryEnum: number, question?: string): string => {
   const categories = ['Crypto', 'Sports', 'Politics', 'Weather', 'Entertainment', 'Other'];
+  
+  // If category is invalid (like 3600) and we have a question, try to infer
+  if ((categoryEnum < 0 || categoryEnum > 5) && question) {
+    const inferredCategory = inferCategoryFromQuestion(question);
+    console.warn('Invalid category detected, inferring from question:', {
+      storedCategory: categoryEnum,
+      question,
+      inferredCategory,
+      inferredName: categories[inferredCategory]
+    });
+    return categories[inferredCategory];
+  }
+  
   return categories[categoryEnum] || 'Other';
 };
 
@@ -82,6 +127,17 @@ const formatDate = (timestamp: number): string => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
+// Helper to format time ago
+const formatTimeAgo = (timestamp: number): string => {
+  const now = Math.floor(Date.now() / 1000);
+  const secondsAgo = now - timestamp;
+  
+  if (secondsAgo < 60) return 'Just now';
+  if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)} min ago`;
+  if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)} hr ago`;
+  return `${Math.floor(secondsAgo / 86400)} days ago`;
+};
+
 const MarketDetail: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -99,6 +155,7 @@ const MarketDetail: NextPage = () => {
   const { marketData, isLoading: isLoadingMarket, refetch: refetchMarket } = useGetMarketData(marketAddress);
   const { yesShares, noShares, isLoading: isLoadingShares, refetch: refetchShares } = useGetUserShares(marketAddress, userAddress);
   const { buyShares, isPending: isBuying, isSuccess: buySuccess } = useBuyShares(marketAddress);
+  const { trades, isLoading: isLoadingTrades } = useGetRecentTrades(marketAddress, 5);
 
   // Transform blockchain market data
   const getBlockchainMarket = () => {
@@ -108,7 +165,10 @@ const MarketDetail: NextPage = () => {
     
     // Extract category from contract data
     const categoryEnum = Number(data.category || 0);
-    const categoryName = getCategoryName(categoryEnum);
+    const question = data.question || 'Untitled Market';
+    
+    // Get category name - will infer from question if category is invalid
+    const categoryName = getCategoryName(categoryEnum, question);
     
     // Calculate total volume
     const totalYesShares = BigInt(data.totalYesShares || 0);
@@ -118,7 +178,7 @@ const MarketDetail: NextPage = () => {
     return {
       id: id as string,
       address: marketAddress,
-      title: data.question || 'Untitled Market',
+      title: question,
       category: categoryName,
       categoryEnum: categoryEnum,
       icon: getCategoryIcon(categoryName),
@@ -251,7 +311,7 @@ const MarketDetail: NextPage = () => {
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="font-orbitron mb-16 transition-all duration-200 flex items-center gap-2 hover:opacity-80"
+            className="font-orbitron transition-all duration-200 flex items-center gap-2 hover:opacity-80"
             style={{ 
               fontSize: '14px',
               background: '#00FF99',
@@ -261,64 +321,79 @@ const MarketDetail: NextPage = () => {
               fontWeight: 700,
               border: 'none',
               cursor: 'pointer',
+              marginBottom: '32px',
             }}
           >
             ← Back to Markets
           </button>
 
-          {/* Market Header - Compact */}
-          <div className="flex items-center gap-5 mb-8">
-            <div 
-              className="flex items-center justify-center"
-              style={{
-                width: '64px',
-                height: '64px',
-                background: 'rgba(0, 255, 153, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(0, 255, 153, 0.3)',
-              }}
-            >
-              <Image src={market.icon} alt={market.category} width={40} height={40} className="rounded" />
+          {/* Market Header */}
+          <div className="flex items-start gap-6" style={{ marginBottom: '40px' }}>
+            {/* Content Section */}
+            <div className="flex-1 min-w-0">
+              {/* Market Title */}
+              <h1 
+                className="font-orbitron font-bold text-white" 
+                style={{ 
+                  fontSize: '36px', 
+                  lineHeight: '1.3',
+                }}
+              >
+                {market.title}
+              </h1>
             </div>
-            <div className="flex-1">
-              {/* Category and Deadline - Split Left and Right */}
-              <div className="flex items-center justify-between mb-6">
-                <span 
-                  className="font-orbitron font-bold text-[11px] px-3 py-1.5 uppercase"
-                  style={{
-                    background: '#00FF99',
-                    color: '#000000',
-                    borderRadius: '4px',
-                  }}
-                >
-                  {market.category}
-                </span>
-                <div
-                  style={{
-                    height: '24px',
-                    borderRadius: '12px',
-                    padding: '6px 12px',
-                    background: '#FEC428',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <span
-                    className="font-orbitron"
-                    style={{
-                      fontWeight: 700,
-                      fontSize: '10px',
-                      color: '#000000',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    ⏱ {getClosingText(market.ends)}
-                  </span>
-                </div>
+
+            {/* Category Icon, Badge, and Deadline - Right Side */}
+            <div className="flex flex-col items-end gap-3 flex-shrink-0">
+              <div 
+                className="flex items-center justify-center"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'rgba(0, 255, 153, 0.1)',
+                  borderRadius: '12px',
+                  border: '2px solid rgba(0, 255, 153, 0.3)',
+                }}
+              >
+                <Image src={market.icon} alt={market.category} width={48} height={48} className="rounded" />
               </div>
-              {/* Market Title with more spacing */}
-              <h1 className="font-orbitron font-bold text-[32px] text-white leading-tight">{market.title}</h1>
+              <span 
+                className="font-orbitron font-bold uppercase"
+                style={{
+                  background: '#00FF99',
+                  color: '#000000',
+                  borderRadius: '4px',
+                  padding: '8px 16px',
+                  fontSize: '12px',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                {market.category}
+              </span>
+              <div
+                style={{
+                  height: '32px',
+                  borderRadius: '16px',
+                  padding: '8px 16px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span
+                  className="font-orbitron"
+                  style={{
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    color: '#FFFFFF',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  ⏱ {getClosingText(market.ends)}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -602,16 +677,6 @@ const MarketDetail: NextPage = () => {
                 </p>
               </div>
 
-              <div 
-                className="pt-6"
-                style={{ borderTop: '1px solid #2A2A2A' }}
-              >
-                <h3 className="font-orbitron text-[#00FF99] text-[12px] uppercase tracking-wider mb-3 font-bold">Resolution Source</h3>
-                <p className="font-orbitron text-[#CCCCCC] text-[15px]">
-                  Official League Website and Major Sports News
-                </p>
-              </div>
-
               {isBlockchainMarket && market.address && (
                 <div 
                   className="pt-6"
@@ -644,113 +709,63 @@ const MarketDetail: NextPage = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-orbitron font-bold text-[22px] text-white">Recent Trades</h2>
-              <div className="font-orbitron text-[#666666] text-[11px] px-3 py-1.5 rounded" style={{ background: '#1A1A1A', border: '1px solid #2A2A2A' }}>
-                Live Preview
-              </div>
             </div>
             
             {/* Trade List */}
-            <div className="space-y-6">
-              {/* BUY YES Trade */}
-              <div 
-                className="flex items-center justify-between p-4 rounded-lg transition-all duration-200"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(0, 255, 153, 0.15)',
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-orbitron text-[#00FF99] text-[14px] font-bold">👍 YES</span>
-                  </div>
-                  <div className="font-orbitron text-white text-[15px] font-bold">0.05 ETH</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-orbitron text-[#888888] text-[11px]">0x1a2b...3c4d</div>
-                  <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">2 min ago</div>
+            {isLoadingTrades ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00FF99] mx-auto mb-4"></div>
+                <div className="text-[#888888] font-orbitron text-sm">Loading trades...</div>
+              </div>
+            ) : !isBlockchainMarket || trades.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-[#666666] font-orbitron text-sm mb-2">📭</div>
+                <div className="text-[#888888] font-orbitron text-sm">
+                  {isBlockchainMarket ? 'No trades yet. Be the first!' : 'Trade data only available for blockchain markets'}
                 </div>
               </div>
-
-              {/* BUY NO Trade */}
-              <div 
-                className="flex items-center justify-between p-4 rounded-lg transition-all duration-200"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 51, 102, 0.15)',
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-orbitron text-[#FF3366] text-[14px] font-bold">👎 NO</span>
-                  </div>
-                  <div className="font-orbitron text-white text-[15px] font-bold">0.12 ETH</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-orbitron text-[#888888] text-[11px]">0x5e6f...7g8h</div>
-                  <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">5 min ago</div>
-                </div>
+            ) : (
+              <div className="space-y-3">
+                {trades.map((trade, index) => {
+                  const isYes = trade.outcome === Outcome.Yes;
+                  const isBuy = trade.type === 'buy';
+                  const timeAgo = formatTimeAgo(trade.timestamp);
+                  const shortAddress = `${trade.trader.slice(0, 6)}...${trade.trader.slice(-4)}`;
+                  
+                  return (
+                    <div 
+                      key={`${trade.txHash}-${index}`}
+                      className="flex items-center justify-between p-4 rounded-lg transition-all duration-200 hover:scale-[1.01]"
+                      style={{ 
+                        background: 'rgba(0, 0, 0, 0.4)',
+                        border: `1px solid ${isYes ? 'rgba(0, 255, 153, 0.15)' : 'rgba(255, 51, 102, 0.15)'}`,
+                      }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-orbitron text-[14px] font-bold" style={{ color: isYes ? '#00FF99' : '#FF3366' }}>
+                            {isYes ? '👍' : '👎'} {isYes ? 'YES' : 'NO'}
+                          </span>
+                          <span className="font-orbitron text-[11px] px-2 py-0.5 rounded" style={{ 
+                            background: isBuy ? 'rgba(0, 255, 153, 0.1)' : 'rgba(255, 165, 0, 0.1)',
+                            color: isBuy ? '#00FF99' : '#FFA500',
+                          }}>
+                            {isBuy ? 'BUY' : 'SELL'}
+                          </span>
+                        </div>
+                        <div className="font-orbitron text-white text-[15px] font-bold">
+                          {parseFloat(trade.amount).toFixed(4)} ETH
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-orbitron text-[#888888] text-[11px]">{shortAddress}</div>
+                        <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">{timeAgo}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              {/* BUY YES Trade */}
-              <div 
-                className="flex items-center justify-between p-4 rounded-lg transition-all duration-200"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(0, 255, 153, 0.15)',
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-orbitron text-[#00FF99] text-[14px] font-bold">👍 YES</span>
-                  </div>
-                  <div className="font-orbitron text-white text-[15px] font-bold">0.08 ETH</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-orbitron text-[#888888] text-[11px]">0x9i0j...1k2l</div>
-                  <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">12 min ago</div>
-                </div>
-              </div>
-
-              {/* BUY YES Trade */}
-              <div 
-                className="flex items-center justify-between p-4 rounded-lg transition-all duration-200"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(0, 255, 153, 0.15)',
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-orbitron text-[#00FF99] text-[14px] font-bold">👍 YES</span>
-                  </div>
-                  <div className="font-orbitron text-white text-[15px] font-bold">0.20 ETH</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-orbitron text-[#888888] text-[11px]">0x3m4n...5o6p</div>
-                  <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">18 min ago</div>
-                </div>
-              </div>
-
-              {/* BUY NO Trade */}
-              <div 
-                className="flex items-center justify-between p-4 rounded-lg transition-all duration-200"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 51, 102, 0.15)',
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-orbitron text-[#FF3366] text-[14px] font-bold">👎 NO</span>
-                  </div>
-                  <div className="font-orbitron text-white text-[15px] font-bold">0.03 ETH</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-orbitron text-[#888888] text-[11px]">0x7q8r...9s0t</div>
-                  <div className="font-orbitron text-[#666666] text-[10px] mt-0.5">25 min ago</div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </main>

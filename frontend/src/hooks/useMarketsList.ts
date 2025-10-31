@@ -77,25 +77,100 @@ export function useAllMarketsData() {
     
     const processed = marketsRawData
       .map((result, index) => {
-        if (result.status !== 'success' || !result.result) return null;
+        if (result.status !== 'success' || !result.result) {
+          console.log('Market data fetch failed:', { index, status: result.status });
+          return null;
+        }
         
         const data = result.result as any;
         const address = marketAddresses[index];
+        
+        // Debug logging for category data - let's see the full raw data structure
+        console.log('RAW MARKET DATA:', { 
+          address, 
+          fullData: data,
+          isArray: Array.isArray(data),
+          dataKeys: Object.keys(data || {}),
+          dataLength: Array.isArray(data) ? data.length : 'not array'
+        });
+        
+        // If it's an array, log each index
+        if (Array.isArray(data)) {
+          console.log('Data by index:', {
+            0: data[0], // question
+            1: data[1], // creator
+            2: data[2], // factory
+            3: data[3], // createdAt
+            4: data[4], // resolutionDeadline
+            5: data[5], // state
+            6: data[6], // result
+            7: data[7], // totalYesShares
+            8: data[8], // totalNoShares
+            9: data[9], // k
+            10: data[10], // tradeCount
+            11: data[11], // capConfig (nested)
+            12: data[12], // category (should be here!)
+            13: data[13], // accumulatedFees
+          });
+        }
+
+        // Try both array access and property access for category
+        const categoryValue = Array.isArray(data) ? data[12] : data.category;
+        const question = data.question || data[0];
+        
+        // Parse category - handle invalid values (like 3600) by inferring from question
+        let parsedCategory = Number(categoryValue || 0);
+        
+        // If category is out of range (should be 0-5), infer from question
+        if (parsedCategory < 0 || parsedCategory > 5) {
+          const inferredCategory = inferCategoryFromQuestion(question);
+          console.warn(`Invalid category value ${parsedCategory} for market "${question}". Inferring from question: ${inferredCategory}`);
+          parsedCategory = inferredCategory;
+        }
+        
+        console.log('Category extraction:', {
+          question,
+          propertyAccess: data.category,
+          arrayAccess: Array.isArray(data) ? data[12] : 'not array',
+          rawValue: categoryValue,
+          parsedValue: parsedCategory
+        });
+
+        // Extract and convert state properly
+        const stateValue = data.state !== undefined ? data.state : data[5];
+        const parsedState = typeof stateValue === 'bigint' ? Number(stateValue) : 
+                           typeof stateValue === 'number' ? stateValue : 
+                           Number(stateValue || 0);
+
+        console.log('State extraction:', {
+          question,
+          propertyAccess: data.state,
+          arrayAccess: Array.isArray(data) ? data[5] : 'not array',
+          rawValue: stateValue,
+          rawType: typeof stateValue,
+          parsedValue: parsedState,
+          parsedType: typeof parsedState
+        });
 
         return {
           address,
-          question: data.question,
-          category: Number(data.category || 0),
-          totalYesShares: data.totalYesShares,
-          totalNoShares: data.totalNoShares,
-          resolutionDeadline: Number(data.resolutionDeadline),
-          state: data.state,
-          tradeCount: Number(data.tradeCount),
-          createdAt: Number(data.createdAt),
-          creator: data.creator,
+          question,
+          category: parsedCategory,
+          totalYesShares: data.totalYesShares || data[7],
+          totalNoShares: data.totalNoShares || data[8],
+          resolutionDeadline: Number(data.resolutionDeadline || data[4]),
+          state: parsedState,
+          tradeCount: Number(data.tradeCount || data[10]),
+          createdAt: Number(data.createdAt || data[3]),
+          creator: data.creator || data[1],
         } as MarketInfo;
       })
       .filter((m): m is MarketInfo => m !== null);
+
+    console.log('All processed markets:', processed.map(m => ({ 
+      question: m.question, 
+      category: m.category 
+    })));
 
     setMarketsData(processed);
     setIsLoadingData(false);
@@ -154,14 +229,59 @@ export function formatMarketDate(timestamp: number): string {
 }
 
 // Helper to format category enum to display name
-export function getCategoryName(categoryEnum: number): string {
+// Helper to infer category from question text (for markets with invalid category stored)
+function inferCategoryFromQuestion(question: string): number {
+  const q = question.toLowerCase();
+  
+  // Sports keywords
+  if (q.match(/\b(win|championship|ballondor|ballon d'or|podium|grand prix|nba|playoffs|sports|team|game|match|tournament|league|player)\b/)) {
+    return 1; // Sports
+  }
+  
+  // Politics keywords
+  if (q.match(/\b(election|vote|president|government|politics|political|un|congress|senate|policy|law)\b/)) {
+    return 2; // Politics
+  }
+  
+  // Entertainment keywords
+  if (q.match(/\b(grammy|oscar|award|movie|music|album|singer|artist|entertainment|celebrity|box office|release)\b/)) {
+    return 4; // Entertainment
+  }
+  
+  // Weather keywords
+  if (q.match(/\b(weather|temperature|rain|snow|hurricane|storm|climate|forecast)\b/)) {
+    return 3; // Weather
+  }
+  
+  // Crypto keywords
+  if (q.match(/\b(bitcoin|ethereum|crypto|token|blockchain|defi|btc|eth|price)\b/)) {
+    return 0; // Crypto
+  }
+  
+  return 5; // Other (default)
+}
+
+export function getCategoryName(categoryEnum: number, question?: string): string {
   const categories = ['Crypto', 'Sports', 'Politics', 'Weather', 'Entertainment', 'Other'];
+  
+  // If category is invalid (like 3600) and we have a question, try to infer
+  if ((categoryEnum < 0 || categoryEnum > 5) && question) {
+    const inferredCategory = inferCategoryFromQuestion(question);
+    console.warn('Invalid category detected, inferring from question:', {
+      storedCategory: categoryEnum,
+      question,
+      inferredCategory,
+      inferredName: categories[inferredCategory]
+    });
+    return categories[inferredCategory];
+  }
+  
   return categories[categoryEnum] || 'Other';
 }
 
 // Helper to get category icon
-export function getCategoryIcon(categoryEnum: number): string {
-  const categoryName = getCategoryName(categoryEnum);
+export function getCategoryIcon(categoryEnum: number, question?: string): string {
+  const categoryName = getCategoryName(categoryEnum, question);
   const icons: Record<string, string> = {
     'Crypto': '/images/crypto.png',
     'Sports': '/images/sports.png',

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAccount } from 'wagmi';
 import Navbar from '../components/Navbar';
+import TransactionModal from '../components/TransactionModal';
 import { useCreateMarket } from '../hooks/useTruceFactory';
 
 const CreateForm: NextPage = () => {
@@ -13,7 +14,8 @@ const CreateForm: NextPage = () => {
   const [currentStep, setCurrentStep] = useState(2);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { address, isConnected } = useAccount();
-  const { createMarket, isPending, isConfirming, isSuccess, error } = useCreateMarket();
+  const { createMarket, isPending, isConfirming, isSuccess, error, hash } = useCreateMarket();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (router.query.category) {
@@ -124,6 +126,24 @@ const CreateForm: NextPage = () => {
       // Convert deadline to Unix timestamp (in seconds)
       const deadline = Math.floor(new Date(deadlineValue).getTime() / 1000);
       
+      console.log('Creating market with:', {
+        question: questionValue,
+        deadline: new Date(deadlineValue).toISOString(),
+        initialLiquidity,
+        categoryString: selectedCategory,
+        categoryWillBeMappedTo: {
+          'crypto': 0,
+          'sports': 1,
+          'politics': 2,
+          'weather': 3,
+          'entertainment': 4,
+          'other': 5
+        }[selectedCategory]
+      });
+      
+      // Show modal when starting transaction
+      setShowModal(true);
+      
       // Create the market on-chain
       await createMarket(
         questionValue,
@@ -133,15 +153,33 @@ const CreateForm: NextPage = () => {
       );
     } catch (error) {
       console.error('Error creating market:', error);
+      // Modal will show error state automatically via useEffect
     }
   };
 
-  // Redirect to markets page on success
+  // Control modal visibility based on transaction states
   useEffect(() => {
-    if (isSuccess) {
-      router.push('/Markets');
+    if (isPending || isConfirming || isSuccess || error) {
+      setShowModal(true);
     }
-  }, [isSuccess, router]);
+  }, [isPending, isConfirming, isSuccess, error]);
+
+  // Determine modal status
+  const getModalStatus = (): 'pending' | 'confirming' | 'success' | 'error' => {
+    if (error) return 'error';
+    if (isSuccess) return 'success';
+    if (isConfirming) return 'confirming';
+    return 'pending';
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setShowModal(false);
+    if (error) {
+      // Allow user to try again on error
+      return;
+    }
+  };
 
   const renderStep1 = () => (
     <div 
@@ -493,6 +531,17 @@ const CreateForm: NextPage = () => {
   );
 
   const renderStep4 = () => {
+    const categoryEnumMap: Record<string, number> = {
+      'crypto': 0,
+      'sports': 1,
+      'politics': 2,
+      'weather': 3,
+      'entertainment': 4,
+      'other': 5
+    };
+    
+    const categoryEnum = selectedCategory ? categoryEnumMap[selectedCategory] : null;
+    
     return (
       <div
         className="absolute"
@@ -518,17 +567,17 @@ const CreateForm: NextPage = () => {
             marginBottom: '20px'
           }}
         >
-          Initial Liquidity (HBAR)*
+          Initial Liquidity (ETH)*
         </label>
         <input
           type="number"
           inputMode="decimal"
           min="0"
-          step="0.01"
+          step="0.001"
           value={initialLiquidity}
           onChange={handleLiquidityChange}
           className="w-full bg-[#1a1a1a] rounded font-orbitron"
-          placeholder="Enter amount in HBAR"
+          placeholder="Enter amount in ETH (min: 0.001)"
           style={{
             fontFamily: 'Orbitron',
             fontSize: '16px',
@@ -539,6 +588,19 @@ const CreateForm: NextPage = () => {
             color: '#FFFFFF'
           }}
         />
+        
+        {/* Category Info */}
+        {selectedCategory && categoryEnum !== null && (
+          <div
+            className="mt-4 p-3 rounded-lg"
+            style={{
+              background: 'rgba(0, 255, 153, 0.05)',
+              border: '1px solid rgba(0, 255, 153, 0.2)',
+            }}
+          >
+            
+          </div>
+        )}
       </div>
     );
   };
@@ -700,6 +762,15 @@ const CreateForm: NextPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Transaction Modal - Rendered at top level for proper centering */}
+      <TransactionModal
+        isOpen={showModal}
+        status={getModalStatus()}
+        errorMessage={error?.message}
+        txHash={hash}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

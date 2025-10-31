@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { 
@@ -14,6 +14,7 @@ import {
   getCategoryIcon,
   type MarketInfo 
 } from '../hooks/useMarketsList';
+import { MarketCategory } from '../config/contracts';
 
 const MOCK_USER_COUNTS = [290, 245, 187, 112, 156, 198, 142, 289, 201, 145]; // Mock user counts since not tracked on-chain
 
@@ -260,15 +261,44 @@ const Markets: NextPage = () => {
     if (selectedCategory !== 'All') {
       const categoryMap: Record<CategoryKey, number> = {
         'All': -1,
-        'Crypto': 0,
-        'Sports': 1,
-        'Politics': 2,
-        'Weather': 3,
-        'Entertainment': 4,
-        'Other': 5,
+        'Crypto': MarketCategory.CRYPTO,
+        'Sports': MarketCategory.SPORTS,
+        'Politics': MarketCategory.POLITICS,
+        'Weather': MarketCategory.WEATHER,
+        'Entertainment': MarketCategory.ENTERTAINMENT,
+        'Other': MarketCategory.OTHER,
       };
       const categoryId = categoryMap[selectedCategory];
-      list = list.filter(m => m.category === categoryId);
+      
+      console.log('Category Filter Debug:', {
+        selectedCategory,
+        categoryId,
+        totalMarkets: list.length,
+        sampleCategories: list.slice(0, 3).map(m => ({ question: m.question, category: m.category }))
+      });
+      
+      list = list.filter(m => {
+        // Ensure we're comparing numbers properly
+        const marketCategory = typeof m.category === 'number' ? m.category : Number(m.category);
+        const matches = marketCategory === categoryId;
+        
+        if (!matches) {
+          console.log('Market filtered out:', { 
+            question: m.question, 
+            marketCategory, 
+            expectedCategory: categoryId,
+            selectedCategory 
+          });
+        }
+        
+        return matches;
+      });
+      
+      console.log('After category filter:', { 
+        selectedCategory, 
+        filteredCount: list.length,
+        filteredMarkets: list.map(m => ({ question: m.question, category: m.category }))
+      });
     }
     
     // Then apply status filter
@@ -281,18 +311,31 @@ const Markets: NextPage = () => {
       
       switch (selectedFilter) {
         case 'Ending Soon':
-          list.sort((a, b) => a.resolutionDeadline - b.resolutionDeadline);
+          list.sort((a, b) => {
+            const deadlineA = typeof a.resolutionDeadline === 'number' ? a.resolutionDeadline : Number(a.resolutionDeadline);
+            const deadlineB = typeof b.resolutionDeadline === 'number' ? b.resolutionDeadline : Number(b.resolutionDeadline);
+            return deadlineA - deadlineB;
+          });
           break;
         case 'High Value':
         case 'Trending':
           list.sort((a, b) => {
-            const volumeA = Number(a.totalYesShares + a.totalNoShares);
-            const volumeB = Number(b.totalYesShares + b.totalNoShares);
+            // Handle bigint properly for volume calculation
+            const volumeA = typeof a.totalYesShares === 'bigint' 
+              ? Number(a.totalYesShares + a.totalNoShares) 
+              : Number(a.totalYesShares) + Number(a.totalNoShares);
+            const volumeB = typeof b.totalYesShares === 'bigint' 
+              ? Number(b.totalYesShares + b.totalNoShares) 
+              : Number(b.totalYesShares) + Number(b.totalNoShares);
             return volumeB - volumeA;
           });
           break;
         case 'Newest':
-          list.sort((a, b) => b.createdAt - a.createdAt);
+          list.sort((a, b) => {
+            const createdA = typeof a.createdAt === 'number' ? a.createdAt : Number(a.createdAt);
+            const createdB = typeof b.createdAt === 'number' ? b.createdAt : Number(b.createdAt);
+            return createdB - createdA;
+          });
           break;
         default:
           break;
@@ -302,6 +345,21 @@ const Markets: NextPage = () => {
     return list;
   }, [blockchainMarkets, selectedFilter, selectedCategory]);
 
+  // Debug: Log filtering results
+  useEffect(() => {
+    console.log('Filtering Debug:', {
+      totalMarkets: blockchainMarkets?.length || 0,
+      filteredCount: filteredMarkets.length,
+      selectedFilter,
+      selectedCategory,
+      sampleMarkets: filteredMarkets.slice(0, 2).map(m => ({
+        question: m.question,
+        category: m.category,
+        state: m.state,
+      }))
+    });
+  }, [filteredMarkets, selectedFilter, selectedCategory, blockchainMarkets]);
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredMarkets.length / marketsPerPage);
   const startIndex = (currentPage - 1) * marketsPerPage;
@@ -310,11 +368,13 @@ const Markets: NextPage = () => {
 
   // Reset to page 1 when filters change
   const handleFilterChange = (filter: FilterKey) => {
+    console.log('Filter changed to:', filter);
     setSelectedFilter(filter);
     setCurrentPage(1);
   };
 
   const handleCategoryChange = (category: CategoryKey) => {
+    console.log('Category changed to:', category);
     setSelectedCategory(category);
     setCurrentPage(1);
   };
@@ -358,9 +418,21 @@ const Markets: NextPage = () => {
             Prediction Markets
           </h1>
           
-          <p className="font-orbitron text-[16px] text-[#CCCCCC]" style={{ margin: 0, marginBottom: '50px' }}>
-            Trade on future event with transparent price and instant liquidity
-          </p>
+          <div className="flex items-center justify-between mb-12">
+            <p className="font-orbitron text-[16px] text-[#CCCCCC]" style={{ margin: 0 }}>
+              Trade on future event with transparent price and instant liquidity
+            </p>
+            {!isLoading && blockchainMarkets.length > 0 && (
+              <div className="font-orbitron text-[14px] text-[#888888]">
+                Showing <span className="text-[#00FF99] font-bold">{filteredMarkets.length}</span> of <span className="text-white font-bold">{blockchainMarkets.length}</span> markets
+                {selectedCategory !== 'All' && (
+                  <span className="ml-2 px-2 py-1 rounded text-[12px] bg-[#00FF99] bg-opacity-10 text-[#00FF99]">
+                    {selectedCategory}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Status Filters Row */}
           <div
@@ -381,16 +453,16 @@ const Markets: NextPage = () => {
               <button
                 key={key}
                 onClick={() => handleFilterChange(key)}
-                className="font-orbitron transition-colors duration-200"
+                className="font-orbitron transition-all duration-200 hover:opacity-80"
                 style={{
                   fontFamily: 'Orbitron',
                   fontSize: '14px',
+                  fontWeight: selectedFilter === key ? 700 : 400,
                   padding: '8px 12px',
                   border: 'none',
                   borderRadius: '4px',
-                  background: selectedFilter === key ? '#24c786' : 'transparent',
+                  background: selectedFilter === key ? '#00FF99' : 'transparent',
                   color: selectedFilter === key ? '#000000' : '#FFFFFF',
-                  
                   cursor: 'pointer',
                   flex: 1,
                   whiteSpace: 'nowrap',
@@ -420,14 +492,15 @@ const Markets: NextPage = () => {
               <button
                 key={key}
                 onClick={() => handleCategoryChange(key)}
-                className="font-orbitron transition-colors duration-200"
+                className="font-orbitron transition-all duration-200 hover:opacity-80"
                 style={{
                   fontFamily: 'Orbitron',
                   fontSize: '14px',
+                  fontWeight: selectedCategory === key ? 700 : 400,
                   padding: '8px 12px',
                   border: 'none',
                   borderRadius: '4px',
-                  background: selectedCategory === key ? '#24c786' : 'transparent',
+                  background: selectedCategory === key ? '#00FF99' : 'transparent',
                   color: selectedCategory === key ? '#000000' : '#FFFFFF',
                   cursor: 'pointer',
                   flex: 1,
@@ -454,12 +527,48 @@ const Markets: NextPage = () => {
           {!isLoading && filteredMarkets.length === 0 && (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <div className="text-white font-orbitron text-2xl mb-4">No Markets Found</div>
-                <div className="text-[#888888] font-orbitron text-sm">
+                <div className="text-white font-orbitron text-2xl mb-4">
+                  {blockchainMarkets.length === 0 ? '📭 No Markets Yet' : '🔍 No Markets Found'}
+                </div>
+                <div className="text-[#888888] font-orbitron text-sm mb-6">
                   {blockchainMarkets.length === 0 
                     ? 'No markets have been created yet. Be the first to create one!' 
-                    : 'No markets match your filters. Try adjusting your selection.'}
+                    : `No ${selectedCategory !== 'All' ? selectedCategory + ' ' : ''}markets match "${selectedFilter}" filter.`}
                 </div>
+                {blockchainMarkets.length > 0 && (selectedCategory !== 'All' || selectedFilter !== 'Trending') && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('All');
+                      setSelectedFilter('Trending');
+                      setCurrentPage(1);
+                    }}
+                    className="font-orbitron px-6 py-3 rounded-lg transition-all duration-200 hover:opacity-80"
+                    style={{
+                      background: '#00FF99',
+                      color: '#000000',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+                {blockchainMarkets.length === 0 && (
+                  <button
+                    onClick={() => window.location.href = '/Create'}
+                    className="font-orbitron px-6 py-3 rounded-lg transition-all duration-200 hover:opacity-80"
+                    style={{
+                      background: '#00FF99',
+                      color: '#000000',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Create First Market
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -469,8 +578,8 @@ const Markets: NextPage = () => {
             <div className="flex flex-col" style={{ gap: '14px' }}>
               {currentMarkets.map((m, index) => {
                 const volume = calculateMarketVolume(m);
-                const categoryName = getCategoryName(m.category);
-                const categoryIcon = getCategoryIcon(m.category);
+                const categoryName = getCategoryName(m.category, m.question);
+                const categoryIcon = getCategoryIcon(m.category, m.question);
                 const endsDate = formatMarketDate(m.resolutionDeadline);
                 const mockUsers = getMockUsers(index);
 

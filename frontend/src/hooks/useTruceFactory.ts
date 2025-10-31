@@ -19,10 +19,23 @@ export function useCreateMarket() {
   ) => {
     const category = CATEGORY_MAP[categoryId.toLowerCase()];
     if (category === undefined) {
-      throw new Error(`Invalid category: ${categoryId}`);
+      console.error('Invalid category mapping:', { 
+        categoryId, 
+        availableCategories: Object.keys(CATEGORY_MAP) 
+      });
+      throw new Error(`Invalid category: ${categoryId}. Must be one of: ${Object.keys(CATEGORY_MAP).join(', ')}`);
     }
 
     const liquidityWei = parseEther(initialLiquidityEth);
+
+    console.log('Calling createMarket contract:', {
+      question,
+      resolutionDeadline: new Date(resolutionDeadline * 1000).toISOString(),
+      initialLiquidity: initialLiquidityEth + ' ETH',
+      categoryString: categoryId,
+      categoryEnum: category,
+      contractAddress: TRUCE_FACTORY_ADDRESS[sepolia.id]
+    });
 
     return writeContract({
       address: TRUCE_FACTORY_ADDRESS[sepolia.id] as Address,
